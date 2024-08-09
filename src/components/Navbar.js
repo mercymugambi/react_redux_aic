@@ -44,14 +44,13 @@ function Navbar() {
          {/* Mobile Version */}
          {isMenuOpen ? (
               <ul className='flex-col md:hidden' >
-              <li><a href='#home' className='text-white'>Home</a></li>
-              <li><a href='#about' className='text-white'>About Us</a></li>
-              {/* include location and Leadership */}
-              <li><a href='#devotion' className='text-white'>Devotions</a></li>
-              <li><a href='#events' className='text-white'>Events</a></li>
-              <li><a href='#gallery' className='text-white'>Gallery</a></li>
-              <li><a href='#giving' className='text-white'>Giving</a></li>
-              <li><a href='#contact' className='text-white'>Contact Us</a></li>
+              <li className='py-2'><a href='#home' className='text-white'>Home</a></li>
+              <li className='py-2'><a href='#about' className='text-white'>About Us</a></li>
+              <li className='py-2'><a href='#devotion' className='text-white'>Devotions</a></li>
+              <li className='py-2'><a href='#events' className='text-white'>Events</a></li>
+              <li className='py-2'><a href='#gallery' className='text-white'>Gallery</a></li>
+              <li className='py-2'><a href='#giving' className='text-white'>Giving</a></li>
+              <li className='py-2'><a href='#contact' className='text-white'>Contact Us</a></li>
           </ul>
          ):null }
          
