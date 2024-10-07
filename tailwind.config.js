@@ -14,8 +14,10 @@ export const theme = {
     'green': '#13ce66',
     'gray-dark': '#273444',
     'gray': '#8492a6',
-    'gray-light': '#d3dce6',
+    'gray-light': '#999090',
     'white': '#ffffff',
+    'black': '#000000',
+    'red': '#900603',
   },
   fontFamily: {
     sans: ['Graphik', 'sans-serif'],
