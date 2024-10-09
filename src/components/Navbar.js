@@ -23,7 +23,7 @@ function Navbar() {
       <div className='flex items-center justify-between'>
         <div className='flex items-center'>
           <img src="/assets/aicLogo.png" alt="AICLogo" className="logo-img" />
-          <div className='text-black text-2xl font-bold'>AIC Kabuku</div>
+          <div className='text-black text-2xl font-bold ml-2'>AIC Kabuku</div>
         </div>
         <div className='md:hidden'>
           <button className='text-gray-dark' onClick={toggleMenu}>
@@ -76,9 +76,9 @@ function Navbar() {
 
       {/* Mobile Version */}
       {isMenuOpen && (
-        <div className='fixed inset-0 bg-white z-50 flex flex-col items-center justify-center'>
-          
-          <div className='shadow-md flex items-center justify-between absolute top-4 right-4 w-full max-w-md px-4'>
+        
+        <div className='fixed inset-0 bg-white z-50 py-4 flex flex-col items-center justify-center'>
+          <div className='shadow-md flex items-center absolute top-0 right-0 justify-between absolute w-full max-w-md px-10 py-4'>
             <div className='flex items-center'>
               <img src="/assets/aicLogo.png" alt="AICLogo" className="logo-img" />
               <div className='text-black text-2xl font-bold ml-2'>AIC Kabuku</div>
@@ -98,7 +98,7 @@ function Navbar() {
             </button>
           </div>
 
-          <ul className='flex flex-col space-y-4 mt-16'>
+          <ul className='flex flex-col space-y-4 mt-8'>
             {['home', 'about', 'devotions', 'events', 'gallery', 'giving', 'contact'].map((item) => (
               <li key={item}>
                 <a
