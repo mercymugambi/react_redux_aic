@@ -18,6 +18,7 @@ export const theme = {
     'white': '#ffffff',
     'black': '#000000',
     'red': '#900603',
+    'indigo': '#ebcbbe',
   },
   fontFamily: {
     sans: ['Graphik', 'sans-serif'],

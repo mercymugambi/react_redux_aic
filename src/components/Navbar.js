@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeItem, setActiveItem] = useState('home');
   const navigate = useNavigate();
+  const location = useLocation();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -13,14 +14,34 @@ function Navbar() {
   const handleItemClick = (item) => {
     setActiveItem(item);
     setIsMenuOpen(false);
-
-    // Navigate to the respective route
     navigate(`/${item === 'home' ? '' : item}`);
   };
 
+  useEffect(() => {
+    const currentPath = location.pathname;
+    if (currentPath === '/') {
+      setActiveItem('home');
+    } else {
+      setActiveItem(currentPath.slice(1));
+    }
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 768 && isMenuOpen) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [isMenuOpen]);
+
   return (
-    <nav className='navbar fixed top-0 left-0 right-0 bg-white py-4 px-10 border border-white shadow-md z-50'>
-      <div className='flex items-center justify-between'>
+    <nav className='navbar fixed top-0 left-0 right-0 bg-white py-0 shadow-md z-50' style={{ borderRadius: '0', padding: '20px 40px' }}>
+      <div className='flex items-center justify-between' style={{ borderRadius: '0' }}>
         <div className='flex items-center'>
           <img src="/assets/aicLogo.png" alt="AICLogo" className="logo-img" />
           <div className='text-black text-2xl font-bold ml-2'>AIC Kabuku</div>
@@ -63,8 +84,8 @@ function Navbar() {
                 href={`#${item}`}
                 className={`text-gray-light ${activeItem === item ? 'text-red' : ''}`}
                 onClick={(e) => {
-                  e.preventDefault(); // Prevent default anchor behavior
-                  handleItemClick(item); // Call the handleItemClick
+                  e.preventDefault();
+                  handleItemClick(item);
                 }}
               >
                 {item.charAt(0).toUpperCase() + item.slice(1)}
@@ -76,9 +97,8 @@ function Navbar() {
 
       {/* Mobile Version */}
       {isMenuOpen && (
-        
-        <div className='fixed inset-0 bg-white z-50 py-4 flex flex-col items-center justify-center'>
-          <div className='shadow-md flex items-center absolute top-0 right-0 justify-between absolute w-full max-w-md px-10 py-4'>
+        <div className='fixed inset-0 bg-white z-50 flex flex-col items-center justify-start w-full h-auto pt-0' style={{ borderRadius: '0', padding: '0' }}>
+          <div className='shadow-md flex items-center justify-between w-full px-10 py-4' style={{ borderRadius: '0', padding: '20px 40px' }}>
             <div className='flex items-center'>
               <img src="/assets/aicLogo.png" alt="AICLogo" className="logo-img" />
               <div className='text-black text-2xl font-bold ml-2'>AIC Kabuku</div>
@@ -98,15 +118,15 @@ function Navbar() {
             </button>
           </div>
 
-          <ul className='flex flex-col space-y-4 mt-8'>
+          <ul className='flex flex-center flex-col space-y-2 mt-0 w-full px-4'>
             {['home', 'about', 'devotions', 'events', 'gallery', 'giving', 'contact'].map((item) => (
               <li key={item}>
                 <a
                   href={`#${item}`}
                   className={`text-gray-light ${activeItem === item ? 'text-red' : ''}`}
                   onClick={(e) => {
-                    e.preventDefault(); // Prevent default anchor behavior
-                    handleItemClick(item); // Call the handleItemClick
+                    e.preventDefault();
+                    handleItemClick(item);
                   }}
                 >
                   {item.charAt(0).toUpperCase() + item.slice(1)}
