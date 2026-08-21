@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Replace https://www.aickabuku.org with the live domain before deploying.
+  Add a <url> entry here whenever a new article is added to src/data/blogPosts.js.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://www.aickabuku.org/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://www.aickabuku.org/aboutus</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.aickabuku.org/events</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.aickabuku.org/gallery</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.aickabuku.org/blog</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.aickabuku.org/contact</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://www.aickabuku.org/blog/grace-that-carries-you-through-monday</loc>
+    <lastmod>2026-08-04</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.aickabuku.org/blog/why-we-still-gather</loc>
+    <lastmod>2026-07-27</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.aickabuku.org/blog/raising-children-who-love-the-word</loc>
+    <lastmod>2026-07-19</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.aickabuku.org/blog/youth-camp-2026-recap</loc>
+    <lastmod>2026-07-11</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.aickabuku.org/blog/clean-water-project-update</loc>
+    <lastmod>2026-06-30</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.aickabuku.org/blog/when-prayers-seem-unanswered</loc>
+    <lastmod>2026-06-21</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.aickabuku.org/blog/from-the-back-row-a-testimony</loc>
+    <lastmod>2026-06-08</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.aickabuku.org/blog/how-to-read-the-bible-in-a-year</loc>
+    <lastmod>2026-05-29</lastmod>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.aickabuku.org/blog/serving-without-burning-out</loc>
+    <lastmod>2026-05-16</lastmod>
+    <priority>0.7</priority>
+  </url>
+</urlset>

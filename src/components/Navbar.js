@@ -1,42 +1,56 @@
-import React, { useState } from 'react'
+import React, { useLayoutEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 
 function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+  const barRef = useRef(null)
+
+  // Publish the navbar's real height so pages can offset themselves against it
+  // rather than guessing a pixel value that only holds at one breakpoint.
+  useLayoutEffect(() => {
+    const bar = barRef.current
+    if (!bar) return undefined
+
+    const publishHeight = () => {
+      const height = Math.round(bar.getBoundingClientRect().height) + 1 // + bottom border
+      document.documentElement.style.setProperty('--nav-height', `${height}px`)
+    }
+
+    publishHeight()
+    if (typeof ResizeObserver === 'undefined') return undefined
+
+    const observer = new ResizeObserver(publishHeight)
+    observer.observe(bar)
+    return () => observer.disconnect()
+  }, [])
 
   const links = [
-    { label: 'Home', href: '#home' },
-    { label: 'Pages', href: '#pages' },
-    { label: 'Event', href: '#event' },
-    { label: 'Sermons', href: '#sermons' },
-    { label: 'Gallery', href: '#gallery' },
-    { label: 'Blog', href: '#blog' },
-    { label: 'Contact Us', href: '#contact' },
+    { label: 'Home', path: '/' },
+    { label: 'About Us', path: '/aboutus' },
+    { label: 'Events', path: '/events' },
+    { label: 'Sermons', href: '/#sermons' },
+    { label: 'Gallery', path: '/gallery' },
+    { label: 'Blog', path: '/blog' },
+    { label: 'Contact Us', path: '/contact' },
   ]
 
   return (
-    <nav className="fixed inset-x-0 top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur-md font-sans">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6 lg:px-8">
+    <nav
+      className="fixed inset-x-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur-md font-sans transition-all duration-500"
+      style={{ top: 'var(--ad-height)' }}
+    >
+      <div ref={barRef} className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3.5 sm:px-6 lg:px-8">
         
         {/* ── Brand Logo ── */}
-        <a href="#home" className="group flex items-center gap-2.5 sm:gap-3 decoration-transparent">
+        <Link to="/" className="group flex shrink-0 items-center gap-2.5 sm:gap-3 decoration-transparent">
           {/* Logo Badge Icon */}
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-red-700/20 bg-red-700/5 text-red-700 transition group-hover:bg-red-700 group-hover:text-white sm:h-10 sm:w-10">
-            <svg
+          <div className="flex h-9 w-9 items-center justify-center overflow-hidden transition sm:h-10 sm:w-10">
+            <img
+              src="/favicon.ico"
+              alt="AIC logo"
               className="h-5 w-5 sm:h-6 sm:w-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              {/* Church emblem with cross */}
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.8}
-                d="M12 3v6m-3-3h6M5 11l7-6 7 6v9a1 1 0 01-1 1H6a1 1 0 01-1-1v-9z"
-              />
-            </svg>
+            />
           </div>
           {/* Brand Name */}
           <div className="flex flex-col leading-none">
@@ -47,30 +61,44 @@ function Navbar() {
               Church Community
             </span>
           </div>
-        </a>
+        </Link>
 
         {/* ── Desktop Navigation Links ── */}
-        <div className="hidden items-center gap-6 lg:flex xl:gap-8">
-          {links.map((link) => (
-            <a
-              key={link.label}
-              href={link.href}
-              className="font-sans text-sm font-semibold text-slate-700 transition-colors hover:text-red-700"
-            >
-              {link.label}
-            </a>
-          ))}
+        <div className="hidden shrink items-center gap-4 lg:flex xl:gap-7">
+          {links.map((link) =>
+            link.path ? (
+              <Link
+                key={link.label}
+                to={link.path}
+                className="font-sans text-sm font-semibold text-slate-700 transition-colors hover:text-red-700"
+              >
+                {link.label}
+              </Link>
+            ) : (
+              <a
+                key={link.label}
+                href={link.href}
+                className="font-sans text-sm font-semibold text-slate-700 transition-colors hover:text-red-700"
+              >
+                {link.label}
+              </a>
+            )
+          )}
         </div>
 
-        {/* ── Right Actions: Donate Button & Icons ── */}
-        <div className="flex items-center gap-2 sm:gap-3.5">
-          {/* Donate Pill Button */}
-          <a
-            href="#contact"
-            className="hidden rounded-full bg-red-700 px-5 py-2 font-sans text-xs font-bold uppercase tracking-wider text-white shadow-sm transition-all duration-200 hover:bg-red-800 hover:shadow active:scale-95 sm:inline-flex"
+        {/* ── Right Actions: Visit Button & Icons ── */}
+        <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+          {/* Plan a Visit Pill Button */}
+          <Link
+            to="/contact"
+            className="hidden whitespace-nowrap rounded-full bg-red-700 px-5 py-2.5 font-sans text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-red-700/30 transition-all duration-200 hover:bg-red-800 hover:shadow-red-700/50 hover:scale-105 active:scale-95 md:inline-flex items-center gap-1.5"
           >
-            Donate
-          </a>
+            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            Plan a Visit
+          </Link>
 
           {/* Share Icon */}
           <button
@@ -81,10 +109,10 @@ function Navbar() {
                 navigator.share({ title: 'AIC Kabuku Church', url: window.location.href }).catch(() => {})
               }
             }}
-            className="p-1.5 text-slate-700 transition hover:text-red-700 focus:outline-none"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-red-50 hover:text-red-700 focus:outline-none"
           >
             <svg
-              className="h-5 w-5"
+              className="h-[18px] w-[18px]"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -101,10 +129,10 @@ function Navbar() {
             type="button"
             aria-label="Search"
             onClick={() => setSearchOpen(!searchOpen)}
-            className="p-1.5 text-slate-700 transition hover:text-red-700 focus:outline-none"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-red-50 hover:text-red-700 focus:outline-none"
           >
             <svg
-              className="h-5 w-5"
+              className="h-[18px] w-[18px]"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -123,7 +151,7 @@ function Navbar() {
             type="button"
             aria-label="Toggle navigation menu"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-1.5 text-slate-700 transition hover:text-red-700 focus:outline-none lg:hidden"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-red-50 hover:text-red-700 focus:outline-none lg:hidden"
           >
             <svg
               className="h-6 w-6"
@@ -172,24 +200,35 @@ function Navbar() {
       {mobileMenuOpen && (
         <div className="border-t border-slate-200 bg-white px-6 py-4 lg:hidden">
           <div className="flex flex-col gap-3">
-            {links.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                onClick={() => setMobileMenuOpen(false)}
-                className="font-sans text-base font-semibold text-slate-800 transition hover:text-red-700"
-              >
-                {link.label}
-              </a>
-            ))}
+            {links.map((link) =>
+              link.path ? (
+                <Link
+                  key={link.label}
+                  to={link.path}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="font-sans text-base font-semibold text-slate-800 transition hover:text-red-700"
+                >
+                  {link.label}
+                </Link>
+              ) : (
+                <a
+                  key={link.label}
+                  href={link.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="font-sans text-base font-semibold text-slate-800 transition hover:text-red-700"
+                >
+                  {link.label}
+                </a>
+              )
+            )}
             <div className="mt-2 pt-3 border-t border-slate-100">
-              <a
-                href="#contact"
+              <Link
+                to="/contact"
                 onClick={() => setMobileMenuOpen(false)}
                 className="inline-flex w-full justify-center rounded-full bg-red-700 py-2.5 font-sans text-sm font-bold uppercase tracking-wider text-white"
               >
-                Donate
-              </a>
+                Plan a Visit
+              </Link>
             </div>
           </div>
         </div>
@@ -199,3 +238,4 @@ function Navbar() {
 }
 
 export default Navbar
+

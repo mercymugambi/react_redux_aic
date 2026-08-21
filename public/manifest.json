@@ -1,6 +1,7 @@
 {
-  "short_name": "AIC Kabuku Church",
-  "name": "Create React App Sample",
+  "short_name": "AIC Kabuku",
+  "name": "AIC Kabuku Church",
+  "description": "Africa Inland Church Kabuku — a Bible-believing church family in Kiambu County, Kenya.",
   "icons": [
     {
       "src": "favicon.ico",
@@ -8,18 +9,16 @@
       "type": "image/x-icon"
     },
     {
-      "src": "logo192.png",
+      "src": "assets/aicLogo.png",
       "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "logo512.png",
-      "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "any",
+      "purpose": "any"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "theme_color": "#000000",
+  "orientation": "portrait-primary",
+  "theme_color": "#b91c1c",
   "background_color": "#ffffff"
 }

@@ -30,7 +30,7 @@ const Giving = () => {
 
         {/* Phone Number Input with Label */}
         <div className="mb-4">
-          <label htmlFor="phone" className="block text-sm font-medium text-gray">
+          <label htmlFor="phone" className="block text-sm font-medium text-slate-700">
             Enter Phone Number:
           </label>
           <input
@@ -45,7 +45,7 @@ const Giving = () => {
 
         {/* Amount Input with Label */}
         <div className="mb-4">
-          <label htmlFor="amount" className="block text-sm font-medium text-gray">
+          <label htmlFor="amount" className="block text-sm font-medium text-slate-700">
             Enter Amount:
           </label>
           <input
@@ -54,7 +54,7 @@ const Giving = () => {
             placeholder="Amount"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            className="mt-1 block w-full border-gray rounded-md shadow-sm focus:ring focus:ring-blue focus:border-blue"
+            className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring focus:ring-blue-500 focus:border-blue-500"
           />
         </div>
 
@@ -62,12 +62,12 @@ const Giving = () => {
         <button
           onClick={handleGiving}
           disabled={loading}
-          className={`w-full mt-4 py-2 px-4 bg-blue text-white font-semibold rounded-md shadow hover:bg-blue focus:outline-none focus:ring focus:ring-blue ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          className={`w-full mt-4 py-2 px-4 rounded-md bg-blue-600 text-white font-semibold shadow transition duration-200 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           {loading ? 'Sending...' : 'Send Payment Request'}
         </button>
 
-        {message && <p className="mt-4 text-center text-sm text-red">{message}</p>}
+        {message && <p className="mt-4 text-center text-sm text-red-600">{message}</p>}
       </div>
     </section>
   );

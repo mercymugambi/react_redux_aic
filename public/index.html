@@ -2,25 +2,89 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#1fb6ff" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <title>AIC Kabuku Church | Africa Inland Church in Kiambu, Kenya</title>
     <meta
       name="description"
-      content="This an AIC kabuku website"
+      content="Africa Inland Church Kabuku is a Bible-believing church family in Kiambu County, Kenya. Join us for Sunday services at 8:00 AM and 10:30 AM, midweek Bible study, youth ministry and community outreach."
     />
-   
+    <meta name="robots" content="index, follow" />
+    <meta name="author" content="AIC Kabuku Church" />
+    <meta name="theme-color" content="#b91c1c" />
+
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/assets/aicLogo.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    
+
+    <!-- Open Graph / Facebook / WhatsApp -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="AIC Kabuku Church" />
+    <meta property="og:locale" content="en_KE" />
+    <meta property="og:title" content="AIC Kabuku Church | Africa Inland Church in Kiambu, Kenya" />
+    <meta
+      property="og:description"
+      content="A Bible-believing church family in Kiambu County, Kenya. Sunday services at 8:00 AM and 10:30 AM, midweek Bible study, youth ministry and community outreach."
+    />
+    <meta property="og:image" content="%PUBLIC_URL%/assets/header-image.jpg" />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="AIC Kabuku Church | Africa Inland Church in Kiambu, Kenya" />
+    <meta
+      name="twitter:description"
+      content="A Bible-believing church family in Kiambu County, Kenya. Sunday services at 8:00 AM and 10:30 AM, midweek Bible study, youth ministry and community outreach."
+    />
+    <meta name="twitter:image" content="%PUBLIC_URL%/assets/header-image.jpg" />
+
     <!-- Google Fonts: Poppins & Playfair Display -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
-   
-    <title>AIC Kabuku Church</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Site-wide structured data. Add "url", "telephone", "email" and precise
+         "geo" coordinates once the live domain and contact details are final. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Church",
+        "name": "AIC Kabuku Church",
+        "legalName": "Africa Inland Church Kabuku",
+        "description": "A Bible-believing, Christ-centred church family in Kabuku, Kiambu County, Kenya.",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Kabuku",
+          "addressRegion": "Kiambu County",
+          "addressCountry": "KE"
+        },
+        "areaServed": "Kiambu County, Kenya",
+        "foundingDate": "1985",
+        "openingHoursSpecification": [
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": "https://schema.org/Sunday",
+            "opens": "08:00",
+            "closes": "13:00"
+          },
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": "https://schema.org/Wednesday",
+            "opens": "17:30",
+            "closes": "19:00"
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <noscript>
+      AIC Kabuku Church — Africa Inland Church in Kabuku, Kiambu County, Kenya. Sunday services at
+      8:00 AM and 10:30 AM, Wednesday Bible study at 5:30 PM. Please enable JavaScript to view the
+      full site.
+    </noscript>
     <div id="root"></div>
   </body>
 </html>

@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 function Footer() {
   return (
@@ -34,13 +35,35 @@ function Footer() {
               Quick Links
             </h4>
             <ul className="mt-4 space-y-2 text-xs">
-              {['Home', 'About Us', 'Events', 'Sermons', 'Recent Causes', 'Contact Us'].map((link) => (
-                <li key={link}>
-                  <a href={`#${link.toLowerCase().replace(/\s+/g, '')}`} className="transition hover:text-red-500">
-                    {link}
-                  </a>
-                </li>
-              ))}
+              <li>
+                <Link to="/" className="transition hover:text-red-500">
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link to="/aboutus" className="transition hover:text-red-500">
+                  About Us
+                </Link>
+              </li>
+              <li>
+                <Link to="/events" className="transition hover:text-red-500">Events</Link>
+              </li>
+              <li>
+                <a href="/#sermons" className="transition hover:text-red-500">Sermons</a>
+              </li>
+              <li>
+                <Link to="/blog" className="transition hover:text-red-500">Blog</Link>
+              </li>
+              <li>
+                <Link to="/gallery" className="transition hover:text-red-500">Gallery</Link>
+              </li>
+              <li>
+                <a href="/#causes" className="transition hover:text-red-500">Recent Causes</a>
+              </li>
+              <li>
+                <a href="/#faq" className="transition hover:text-red-500">FAQs</a>
+              </li>
+              <li><Link to="/contact" className="transition hover:text-red-500">Contact Us</Link></li>
             </ul>
           </div>
 

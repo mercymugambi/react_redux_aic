@@ -119,7 +119,7 @@ function RecentCauses() {
                   {/* Donate Button */}
                   <button
                     onClick={() => setActiveDonation(cause.id)}
-                    className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-[#b91c1c] py-3 font-sans text-xs font-bold uppercase tracking-widest text-white shadow transition-all hover:bg-red-800 active:scale-95"
+                    className="mt-4 inline-flex w-full items-center justify-center rounded-full bg-[#b91c1c] py-3 font-sans text-xs font-bold uppercase tracking-widest text-white shadow-lg shadow-red-700/20 transition-all duration-200 hover:bg-red-900 active:scale-95"
                   >
                     Donate
                   </button>

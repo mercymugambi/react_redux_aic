@@ -4,9 +4,16 @@
 @import 'tailwindcss/utilities';
 
 @layer base {
+  :root {
+    /* Measured at runtime: --nav-height by Navbar, --ad-height by App. The
+       fallbacks below match the navbar's height on a small phone. */
+    --ad-height: 0px;
+    --nav-height: 66px;
+  }
+
   html {
     scroll-behavior: smooth;
-    scroll-padding-top: 5.5rem;
+    scroll-padding-top: calc(var(--ad-height) + var(--nav-height) + 1rem);
   }
 
   body {
@@ -41,6 +48,16 @@
 }
 
 @layer components {
+  /* Clears the fixed navbar (and the announcement bar when it is showing) at
+     every breakpoint, instead of the hardcoded pixel offsets pages used before. */
+  .page-offset {
+    padding-top: calc(var(--ad-height) + var(--nav-height));
+  }
+
+  .sticky-below-nav {
+    top: calc(var(--ad-height) + var(--nav-height));
+  }
+
   .scroll-progress {
     position: fixed;
     z-index: 60;
@@ -77,17 +94,66 @@
     animation: hero-enter 800ms cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
+  .btn-blue-primary {
+    @apply inline-flex items-center justify-center rounded-full px-7 py-3.5 text-sm font-bold uppercase tracking-[0.14em] text-white transition duration-200 shadow-lg;
+    background-color: #2563eb;
+    border: 1px solid transparent;
+    box-shadow: 0 20px 25px -14px rgba(15, 23, 42, 0.2), 0 8px 10px -8px rgba(15, 23, 42, 0.15);
+  }
+
+  .btn-blue-primary:hover {
+    background-color: #1d4ed8;
+  }
+
+  .btn-blue-secondary {
+    @apply inline-flex items-center justify-center rounded-full px-7 py-3.5 text-sm font-bold uppercase tracking-[0.14em] transition duration-200;
+    color: #1d4ed8;
+    background-color: #eff6ff;
+    border: 1px solid rgba(37, 99, 235, 0.25);
+  }
+
+  .btn-blue-secondary:hover {
+    background-color: #dbeafe;
+  }
+
   .hero-intro > *:nth-child(1) { animation-delay: 120ms; }
   .hero-intro > *:nth-child(2) { animation-delay: 210ms; }
   .hero-intro > *:nth-child(3) { animation-delay: 290ms; }
   .hero-intro > *:nth-child(4) { animation-delay: 390ms; }
   .hero-intro > *:nth-child(5) { animation-delay: 500ms; }
+  .hero-intro > *:nth-child(6) { animation-delay: 600ms; }
+  .hero-intro > *:nth-child(7) { animation-delay: 690ms; }
 }
 
 @keyframes hero-enter {
   from { opacity: 0; transform: translateY(24px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+@keyframes contact-enter {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.contact-enter { animation: contact-enter 620ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.contact-enter-delay-1 { animation-delay: 90ms; }
+.contact-enter-delay-2 { animation-delay: 170ms; }
+.contact-enter-delay-3 { animation-delay: 250ms; }
+
+.contact-input {
+  display: block;
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.375rem;
+  background: #ffffff;
+  padding: 0.75rem 0.875rem;
+  color: #0f172a;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+.contact-input::placeholder { color: #94a3b8; }
+.contact-input:focus { outline: none; border-color: #b91c1c; box-shadow: 0 0 0 3px rgba(185, 28, 28, 0.12); }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
