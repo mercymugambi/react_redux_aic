@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { Routes, Route } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Header from './components/Header'
 import EventSermonHighlights from './components/EventSermonHighlights'
@@ -9,8 +10,19 @@ import MinistriesSection from './components/MinistriesSection'
 import ScriptureBanner from './components/ScriptureBanner'
 import TestimonialsSection from './components/TestimonialsSection'
 import Footer from './components/Footer'
+import Login from './components/Login'
+import ProtectedRoute from './components/ProtectedRoute'
+import Dashboard from './components/admin/Dashboard'
+import DashboardHome from './components/admin/DashboardHome'
+import MembersList from './components/admin/MembersList'
+import UsersList from './components/admin/UsersList'
+import RolesList from './components/admin/RolesList'
+import DevotionsList from './components/admin/DevotionsList'
+import EventsList from './components/admin/EventsList'
+import FellowshipGroupsList from './components/admin/FellowshipGroupsList'
+import LeadershipPositionsList from './components/admin/LeadershipPositionsList'
 
-function App() {
+function PublicSite() {
   useEffect(() => {
     const revealItems = document.querySelectorAll('[data-reveal]')
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -65,6 +77,37 @@ function App() {
       <TestimonialsSection />
       <Footer />
     </div>
+  )
+}
+
+function App() {
+  return (
+    <Routes>
+      {/* Public website */}
+      <Route path="/" element={<PublicSite />} />
+
+      {/* Login */}
+      <Route path="/login" element={<Login />} />
+
+      {/* Admin dashboard (protected) */}
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<DashboardHome />} />
+        <Route path="members" element={<MembersList />} />
+        <Route path="users" element={<UsersList />} />
+        <Route path="roles" element={<RolesList />} />
+        <Route path="devotions" element={<DevotionsList />} />
+        <Route path="events" element={<EventsList />} />
+        <Route path="fellowship-groups" element={<FellowshipGroupsList />} />
+        <Route path="leadership-positions" element={<LeadershipPositionsList />} />
+      </Route>
+    </Routes>
   )
 }
 
