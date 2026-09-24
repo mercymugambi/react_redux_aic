@@ -1,123 +1,118 @@
-.admin-layout {
-  display: flex;
-  min-height: 100vh;
+/* ══════════════════════════════════════════════════
+   Admin list pages (Members, Users, Roles, …)
+   The shell (Dashboard.js) and the overview use Tailwind; these
+   classes style the plain markup the list pages render.
+   ══════════════════════════════════════════════════ */
+
+/* Page heading + count line. :where() keeps specificity low so Tailwind
+   utilities on other pages always win. */
+:where(.admin-main) > div > h2 {
+  margin: 0 0 4px;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #0f172a;
 }
 
-.admin-sidebar {
-  width: 220px;
-  background: #f5f5f5;
-  border-right: 1px solid #ddd;
-  padding: 20px 0;
-  flex-shrink: 0;
-}
-
-.admin-sidebar h3 {
-  padding: 0 15px;
-  margin: 0 0 20px 0;
-  font-size: 16px;
-}
-
-.admin-sidebar nav a {
-  display: block;
-  padding: 8px 15px;
-  color: #333;
-  text-decoration: none;
-  font-size: 14px;
-}
-
-.admin-sidebar nav a:hover {
-  background: #e8e8e8;
-}
-
-.admin-sidebar nav a.active {
-  background: #ddd;
-  font-weight: bold;
-}
-
-.admin-sidebar .user-info {
-  padding: 15px;
-  border-top: 1px solid #ddd;
-  margin-top: 20px;
+:where(.admin-main) > div > p {
+  margin: 0;
   font-size: 13px;
+  color: #64748b;
 }
 
-.admin-sidebar .user-info p {
-  margin: 0 0 5px 0;
-}
-
-.admin-sidebar .logout-btn {
-  margin-top: 10px;
-  padding: 5px 12px;
-  cursor: pointer;
-  background: none;
-  border: 1px solid #999;
-  font-size: 13px;
-}
-
-.admin-sidebar .logout-btn:hover {
-  background: #eee;
-}
-
-.admin-content {
-  flex: 1;
-  padding: 20px 30px;
-  overflow-y: auto;
-}
-
+/* Tables */
 .admin-table {
   width: 100%;
-  border-collapse: collapse;
-  margin-top: 15px;
+  margin-top: 20px;
+  border: 1px solid #e2e8f0;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  font-size: 13px;
 }
 
 .admin-table th,
 .admin-table td {
-  border: 1px solid #ddd;
-  padding: 8px 12px;
+  padding: 10px 16px;
   text-align: left;
-  font-size: 14px;
+  border-bottom: 1px solid #f1f5f9;
 }
 
 .admin-table th {
-  background: #f5f5f5;
-  font-weight: 600;
+  background: #f8fafc;
+  border-bottom-color: #e2e8f0;
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+  white-space: nowrap;
 }
 
-.admin-table tr:hover {
-  background: #fafafa;
+.admin-table td {
+  color: #475569;
 }
 
-.summary-cards {
-  display: flex;
-  gap: 15px;
-  flex-wrap: wrap;
-  margin-top: 15px;
+.admin-table tbody tr:last-child td {
+  border-bottom: 0;
 }
 
-.summary-card {
-  border: 1px solid #ddd;
-  padding: 15px 20px;
-  min-width: 150px;
+.admin-table tbody tr:hover td {
+  background: #f8fafc;
 }
 
-.summary-card h4 {
-  margin: 0 0 5px 0;
-  font-size: 14px;
-  color: #666;
-}
-
-.summary-card .count {
-  font-size: 24px;
-  font-weight: bold;
-}
-
+/* Status messages */
 .loading-message,
 .error-message {
-  padding: 15px;
-  margin-top: 10px;
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+}
+
+.loading-message {
+  color: #64748b;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
 }
 
 .error-message {
-  color: red;
-  border: 1px solid red;
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+/* Slide-over panels and toasts (Members page) */
+@keyframes admin-drawer-in {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes admin-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes admin-toast-in {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.admin-drawer-in {
+  animation: admin-drawer-in 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.admin-fade-in {
+  animation: admin-fade-in 200ms ease-out;
+}
+
+.admin-toast-in {
+  animation: admin-toast-in 200ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-drawer-in,
+  .admin-fade-in,
+  .admin-toast-in {
+    animation: none;
+  }
 }

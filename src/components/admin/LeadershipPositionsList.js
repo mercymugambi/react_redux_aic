@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../redux/api';
+import api, { apiErrorMessage } from '../../redux/api';
 
 function LeadershipPositionsList() {
   const [positions, setPositions] = useState([]);
@@ -13,7 +13,7 @@ function LeadershipPositionsList() {
         setLoading(false);
       })
       .catch((err) => {
-        setError('Failed to load leadership positions.');
+        setError(apiErrorMessage(err, 'Failed to load leadership positions.'));
         setLoading(false);
         console.error(err);
       });

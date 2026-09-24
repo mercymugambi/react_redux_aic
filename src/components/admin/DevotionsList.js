@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api from '../../redux/api';
+import api, { apiErrorMessage } from '../../redux/api';
 
 function DevotionsList() {
   const [devotions, setDevotions] = useState([]);
@@ -13,7 +13,7 @@ function DevotionsList() {
         setLoading(false);
       })
       .catch((err) => {
-        setError('Failed to load devotions.');
+        setError(apiErrorMessage(err, 'Failed to load devotions.'));
         setLoading(false);
         console.error(err);
       });

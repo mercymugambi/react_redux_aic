@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Header from './components/Header'
 import EventHighlight from './components/EventHighlight'
@@ -18,14 +18,20 @@ import Blog from './components/Blog'
 import BlogPost from './components/BlogPost'
 import Footer from './components/Footer'
 import Login from './components/Login'
+import NotFound from './components/NotFound'
 import ProtectedRoute from './components/ProtectedRoute'
+import PermissionRoute from './components/PermissionRoute'
 import Dashboard from './components/admin/Dashboard'
 import DashboardHome from './components/admin/DashboardHome'
+import NotAuthorized from './components/admin/NotAuthorized'
 import MembersList from './components/admin/MembersList'
 import UsersList from './components/admin/UsersList'
+import AddUser from './components/admin/AddUser'
 import RolesList from './components/admin/RolesList'
 import DevotionsList from './components/admin/DevotionsList'
 import EventsList from './components/admin/EventsList'
+import BlogPosts from './components/admin/BlogPosts'
+import GalleryList from './components/admin/GalleryList'
 import FellowshipGroupsList from './components/admin/FellowshipGroupsList'
 import LeadershipPositionsList from './components/admin/LeadershipPositionsList'
 
@@ -159,6 +165,8 @@ function PublicSite() {
         <Route path="/blog" element={<Blog />} />
         <Route path="/blog/:slug" element={<BlogPost />} />
         <Route path="/contact" element={<ContactUs />} />
+        <Route path="/contact-admin" element={<NotFound variant="adminHelp" />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
       <Footer />
     </div>
@@ -183,14 +191,22 @@ function App() {
           </ProtectedRoute>
         }
       >
-        <Route index element={<DashboardHome />} />
-        <Route path="members" element={<MembersList />} />
-        <Route path="users" element={<UsersList />} />
-        <Route path="roles" element={<RolesList />} />
-        <Route path="devotions" element={<DevotionsList />} />
-        <Route path="events" element={<EventsList />} />
-        <Route path="fellowship-groups" element={<FellowshipGroupsList />} />
-        <Route path="leadership-positions" element={<LeadershipPositionsList />} />
+        {/* The permission each page needs is set in src/auth/permissions.js */}
+        <Route element={<PermissionRoute />}>
+          <Route index element={<DashboardHome />} />
+          <Route path="members" element={<MembersList />} />
+          <Route path="users" element={<UsersList />} />
+          <Route path="users/new" element={<AddUser />} />
+          <Route path="roles" element={<RolesList />} />
+          <Route path="devotions" element={<DevotionsList />} />
+          <Route path="events" element={<EventsList />} />
+          <Route path="blog" element={<BlogPosts />} />
+          <Route path="gallery" element={<GalleryList />} />
+          <Route path="fellowship-groups" element={<FellowshipGroupsList />} />
+          <Route path="leadership-positions" element={<LeadershipPositionsList />} />
+        </Route>
+        <Route path="not-authorized" element={<NotAuthorized />} />
+        <Route path="*" element={<Navigate to="/admin" replace />} />
       </Route>
     </Routes>
   )
