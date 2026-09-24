@@ -1,0 +1,123 @@
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.admin-sidebar {
+  width: 220px;
+  background: #f5f5f5;
+  border-right: 1px solid #ddd;
+  padding: 20px 0;
+  flex-shrink: 0;
+}
+
+.admin-sidebar h3 {
+  padding: 0 15px;
+  margin: 0 0 20px 0;
+  font-size: 16px;
+}
+
+.admin-sidebar nav a {
+  display: block;
+  padding: 8px 15px;
+  color: #333;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.admin-sidebar nav a:hover {
+  background: #e8e8e8;
+}
+
+.admin-sidebar nav a.active {
+  background: #ddd;
+  font-weight: bold;
+}
+
+.admin-sidebar .user-info {
+  padding: 15px;
+  border-top: 1px solid #ddd;
+  margin-top: 20px;
+  font-size: 13px;
+}
+
+.admin-sidebar .user-info p {
+  margin: 0 0 5px 0;
+}
+
+.admin-sidebar .logout-btn {
+  margin-top: 10px;
+  padding: 5px 12px;
+  cursor: pointer;
+  background: none;
+  border: 1px solid #999;
+  font-size: 13px;
+}
+
+.admin-sidebar .logout-btn:hover {
+  background: #eee;
+}
+
+.admin-content {
+  flex: 1;
+  padding: 20px 30px;
+  overflow-y: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+.admin-table th,
+.admin-table td {
+  border: 1px solid #ddd;
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 14px;
+}
+
+.admin-table th {
+  background: #f5f5f5;
+  font-weight: 600;
+}
+
+.admin-table tr:hover {
+  background: #fafafa;
+}
+
+.summary-cards {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  margin-top: 15px;
+}
+
+.summary-card {
+  border: 1px solid #ddd;
+  padding: 15px 20px;
+  min-width: 150px;
+}
+
+.summary-card h4 {
+  margin: 0 0 5px 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.summary-card .count {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.loading-message,
+.error-message {
+  padding: 15px;
+  margin-top: 10px;
+}
+
+.error-message {
+  color: red;
+  border: 1px solid red;
+}

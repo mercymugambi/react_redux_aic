@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Header from './components/Header'
 import EventHighlight from './components/EventHighlight'
@@ -17,15 +17,21 @@ import ContactUs from './components/ContactUs'
 import Blog from './components/Blog'
 import BlogPost from './components/BlogPost'
 import Footer from './components/Footer'
-import Seo from './components/Seo'
+import Login from './components/Login'
+import ProtectedRoute from './components/ProtectedRoute'
+import Dashboard from './components/admin/Dashboard'
+import DashboardHome from './components/admin/DashboardHome'
+import MembersList from './components/admin/MembersList'
+import UsersList from './components/admin/UsersList'
+import RolesList from './components/admin/RolesList'
+import DevotionsList from './components/admin/DevotionsList'
+import EventsList from './components/admin/EventsList'
+import FellowshipGroupsList from './components/admin/FellowshipGroupsList'
+import LeadershipPositionsList from './components/admin/LeadershipPositionsList'
 
 function HomePage() {
   return (
     <>
-      <Seo
-        path="/"
-        description="Africa Inland Church Kabuku is a Bible-believing church family in Kiambu County, Kenya. Sunday services at 8:00 AM and 10:30 AM, Wednesday Bible study, youth ministry and community outreach — everyone is welcome."
-      />
       <Header />
       <EventHighlight />
       <RecentCauses />
@@ -39,7 +45,7 @@ function HomePage() {
   )
 }
 
-function App() {
+function PublicSite() {
   const [showAd, setShowAd] = useState(false)
   const [adMounted, setAdMounted] = useState(false)
 
@@ -99,68 +105,95 @@ function App() {
   }, [])
 
   return (
-    <BrowserRouter>
-      <div className="min-h-screen bg-white text-slate-900 font-sans antialiased">
-        <div className="scroll-progress" aria-hidden="true" />
-        {adMounted && (
-          <div
-            className={`fixed inset-x-0 top-0 z-60 bg-blue-800 shadow-lg shadow-blue-900/40 transition-transform duration-500 ${showAd ? 'translate-y-0' : '-translate-y-full'}`}
-          >
-            <div className="mx-auto flex h-11 w-full max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
-              {/* Left: marquee-style announcement text */}
-              <div className="flex flex-1 items-center gap-3 overflow-hidden">
-                <span className="shrink-0 flex items-center gap-1.5 rounded-sm bg-white/20 pl-1 pr-2.5 py-0.5">
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white shadow-sm">
-                    <img src="/favicon.ico" alt="AIC logo" className="h-3.5 w-3.5" />
-                  </span>
-                  <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-white">Notice</span>
+    <div className="min-h-screen bg-white text-slate-900 font-sans antialiased">
+      <div className="scroll-progress" aria-hidden="true" />
+      {adMounted && (
+        <div
+          className={`fixed inset-x-0 top-0 z-60 bg-blue-800 shadow-lg shadow-blue-900/40 transition-transform duration-500 ${showAd ? 'translate-y-0' : '-translate-y-full'}`}
+        >
+          <div className="mx-auto flex h-11 w-full max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
+            {/* Left: marquee-style announcement text */}
+            <div className="flex flex-1 items-center gap-3 overflow-hidden">
+              <span className="shrink-0 flex items-center gap-1.5 rounded-sm bg-white/20 pl-1 pr-2.5 py-0.5">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white shadow-sm">
+                  <img src="/favicon.ico" alt="AIC logo" className="h-3.5 w-3.5" />
                 </span>
-                <span className="truncate text-xs font-semibold text-white/95 sm:text-sm">
-                  Watch sermons on YouTube for encouraging messages and worship every week.
-                </span>
-              </div>
-              {/* Right: CTA + Close */}
-              <div className="flex shrink-0 items-center gap-2">
-                <a
-                  href="https://youtube.com"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="hidden rounded-sm bg-white px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-blue-800 transition duration-200 hover:bg-blue-50 sm:inline-flex"
-                >
-                  Watch Sermons
-                </a>
-                <button
-                  type="button"
-                  onClick={() => setShowAd(false)}
-                  aria-label="Close announcement"
-                  className="ml-1 flex h-7 w-7 items-center justify-center rounded-sm border border-white/30 bg-white/10 text-white/80 transition hover:bg-white/20 hover:text-white"
-                >
-                  <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
+                <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-white">Notice</span>
+              </span>
+              <span className="truncate text-xs font-semibold text-white/95 sm:text-sm">
+                Watch sermons on YouTube for encouraging messages and worship every week.
+              </span>
+            </div>
+            {/* Right: CTA + Close */}
+            <div className="flex shrink-0 items-center gap-2">
+              <a
+                href="https://youtube.com"
+                target="_blank"
+                rel="noreferrer"
+                className="hidden rounded-sm bg-white px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-blue-800 transition duration-200 hover:bg-blue-50 sm:inline-flex"
+              >
+                Watch Sermons
+              </a>
+              <button
+                type="button"
+                onClick={() => setShowAd(false)}
+                aria-label="Close announcement"
+                className="ml-1 flex h-7 w-7 items-center justify-center rounded-sm border border-white/30 bg-white/10 text-white/80 transition hover:bg-white/20 hover:text-white"
+              >
+                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
           </div>
-        )}
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/about" element={<AboutUs />} />
-          <Route path="/aboutus" element={<AboutUs />} />
-          <Route path="/events" element={<Events />} />
-          <Route path="/event" element={<Events />} />
-          <Route path="/gallery" element={<Gallery />} />
-          <Route path="/blog" element={<Blog />} />
-          <Route path="/blog/:slug" element={<BlogPost />} />
-          <Route path="/contact" element={<ContactUs />} />
-        </Routes>
-        <Footer />
-      </div>
-    </BrowserRouter>
+        </div>
+      )}
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/about" element={<AboutUs />} />
+        <Route path="/aboutus" element={<AboutUs />} />
+        <Route path="/events" element={<Events />} />
+        <Route path="/event" element={<Events />} />
+        <Route path="/gallery" element={<Gallery />} />
+        <Route path="/blog" element={<Blog />} />
+        <Route path="/blog/:slug" element={<BlogPost />} />
+        <Route path="/contact" element={<ContactUs />} />
+      </Routes>
+      <Footer />
+    </div>
+  )
+}
+
+function App() {
+  return (
+    <Routes>
+      {/* Public website */}
+      <Route path="/*" element={<PublicSite />} />
+
+      {/* Login */}
+      <Route path="/login" element={<Login />} />
+
+      {/* Admin dashboard (protected) */}
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<DashboardHome />} />
+        <Route path="members" element={<MembersList />} />
+        <Route path="users" element={<UsersList />} />
+        <Route path="roles" element={<RolesList />} />
+        <Route path="devotions" element={<DevotionsList />} />
+        <Route path="events" element={<EventsList />} />
+        <Route path="fellowship-groups" element={<FellowshipGroupsList />} />
+        <Route path="leadership-positions" element={<LeadershipPositionsList />} />
+      </Route>
+    </Routes>
   )
 }
 
 export default App
-
-
