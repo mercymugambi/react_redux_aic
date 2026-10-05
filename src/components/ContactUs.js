@@ -19,7 +19,9 @@ function ContactUs() {
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', topic: 'General enquiry', message: '' })
   const [sent, setSent] = useState(false)
 
-  useEffect(() => window.scrollTo(0, 0), [])
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
 
   const handleSubmit = (event) => {
     event.preventDefault()

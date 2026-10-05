@@ -119,12 +119,6 @@ function MinistriesSection() {
                 onMouseLeave={() => setHovered(null)}
                 className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white p-7 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-default"
               >
-                {/* Red accent bar on hover */}
-                <div
-                  className="absolute left-0 top-0 h-full w-1 rounded-l-2xl transition-all duration-300 group-hover:w-1.5"
-                  style={{ backgroundColor: '#b91c1c' }}
-                />
-
                 {/* Icon */}
                 <div
                   className="inline-flex items-center justify-center rounded-xl p-3 text-white transition-transform duration-300 group-hover:scale-110"

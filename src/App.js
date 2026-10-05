@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Header from './components/Header'
 import EventHighlight from './components/EventHighlight'
+import ServicesSection from './components/ServicesSection'
 import RecentCauses from './components/RecentCauses'
 import HomeAboutSection from './components/HomeAboutSection'
 import AboutUs from './components/AboutUs'
@@ -40,6 +41,7 @@ function HomePage() {
     <>
       <Header />
       <EventHighlight />
+      <ServicesSection />
       <RecentCauses />
       <HomeAboutSection />
       <StatsCounter />
@@ -71,28 +73,51 @@ function PublicSite() {
   }, [showAd])
 
   useEffect(() => {
-    const revealItems = document.querySelectorAll('[data-reveal]')
     const prefersReducedMotion = typeof window.matchMedia === 'function' ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false
+    const canAnimate = !prefersReducedMotion && typeof window.IntersectionObserver !== 'undefined'
 
-    if (prefersReducedMotion || typeof window.IntersectionObserver === 'undefined') {
-      revealItems.forEach((item) => item.classList.add('is-visible'))
-      return undefined
+    const observer = canAnimate
+      ? new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return
+
+            entry.target.classList.add('is-visible')
+            observer.unobserve(entry.target)
+          })
+        },
+        { threshold: 0.12, rootMargin: '0px 0px -56px' }
+      )
+      : null
+
+    const reveal = (item) => {
+      if (item.classList.contains('is-visible')) return
+      if (observer) observer.observe(item)
+      else item.classList.add('is-visible')
     }
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return
+    const revealWithin = (node) => {
+      if (!(node instanceof Element)) return
+      if (node.matches('[data-reveal]')) reveal(node)
+      node.querySelectorAll('[data-reveal]').forEach(reveal)
+    }
 
-          entry.target.classList.add('is-visible')
-          observer.unobserve(entry.target)
-        })
-      },
-      { threshold: 0.12, rootMargin: '0px 0px -56px' }
-    )
+    revealWithin(document.body)
 
-    revealItems.forEach((item) => observer.observe(item))
+    // Pages rendered after a client-side navigation (or once their data loads) add new
+    // [data-reveal] elements. Without this they keep opacity: 0 until a full reload.
+    const mutationObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => mutation.addedNodes.forEach(revealWithin))
+    })
+    mutationObserver.observe(document.body, { childList: true, subtree: true })
 
+    return () => {
+      mutationObserver.disconnect()
+      if (observer) observer.disconnect()
+    }
+  }, [])
+
+  useEffect(() => {
     const updateScrollProgress = () => {
       const scrollableHeight = document.documentElement.scrollHeight - window.innerHeight
       const progress = scrollableHeight > 0 ? (window.scrollY / scrollableHeight) * 100 : 0
@@ -104,7 +129,6 @@ function PublicSite() {
     window.addEventListener('resize', updateScrollProgress)
 
     return () => {
-      observer.disconnect()
       window.removeEventListener('scroll', updateScrollProgress)
       window.removeEventListener('resize', updateScrollProgress)
     }

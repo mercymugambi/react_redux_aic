@@ -10,7 +10,6 @@ function EventHighlight() {
 
       <div data-reveal className="relative overflow-hidden rounded-3xl border border-slate-200/80 bg-white/95 p-6 shadow-2xl shadow-slate-200/40 transition-all duration-300 hover:-translate-y-1 sm:p-8 lg:p-10">
         <div className="absolute -right-10 -top-10 hidden h-48 w-48 rounded-full bg-red-100/70 blur-3xl sm:block" />
-        <div className="absolute inset-x-6 top-6 h-1 rounded-full bg-slate-900/5" />
 
         <div className="relative grid gap-8 lg:grid-cols-12 lg:gap-10">
 
