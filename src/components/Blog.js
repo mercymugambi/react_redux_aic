@@ -1,11 +1,77 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import blogPosts, { blogCategories, formatPostDate } from '../data/blogPosts'
+import { BLOG_CATEGORIES, formatPostDate } from '../data/blog'
+import { AuthorInitials, PostCardSkeleton, PostCover } from './BlogParts'
 import Seo from './Seo'
+import { usePublishedPosts } from './useBlogPosts'
 
 const PAGE_SIZE = 6
+const FILTERS = ['All', ...BLOG_CATEGORIES]
+
+function Message({ title, children }) {
+  return (
+    <div className="rounded-2xl border border-slate-200 bg-slate-50 py-20 text-center">
+      <svg className="mx-auto h-10 w-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m0 0h2a2 2 0 012 2v9a2 2 0 01-2 2h-2m0-13v13M7 8h6M7 12h6" />
+      </svg>
+      <p className="mt-3 text-base font-bold text-slate-400">{title}</p>
+      {children}
+    </div>
+  )
+}
+
+function PostCard({ post }) {
+  return (
+    <article className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-slate-200/70">
+      <Link to={`/blog/${post.slug}`} className="relative block h-48 overflow-hidden bg-slate-100">
+        <PostCover src={post.cover_image_url} alt={post.title} className="h-full w-full transition duration-500 group-hover:scale-105" />
+        {post.category && (
+          <span className="absolute left-3 top-3 rounded-full border border-slate-200 bg-white/90 px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider text-red-700 backdrop-blur">
+            {post.category}
+          </span>
+        )}
+        {post.featured && (
+          <span className="absolute right-3 top-3 rounded-full bg-red-700 px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-lg">
+            Featured
+          </span>
+        )}
+        {post.read_minutes > 0 && (
+          <span className="absolute bottom-3 right-3 rounded-full bg-slate-900/75 px-2.5 py-0.5 text-[10px] font-bold text-white backdrop-blur">
+            {post.read_minutes} min
+          </span>
+        )}
+      </Link>
+
+      <div className="flex flex-1 flex-col p-5">
+        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{formatPostDate(post.published_on)}</p>
+        <h3 className="mt-2 text-base font-bold leading-snug text-slate-900 transition group-hover:text-red-700">
+          <Link to={`/blog/${post.slug}`}>{post.title}</Link>
+        </h3>
+        <p className="mt-2.5 text-xs leading-relaxed text-slate-500">{post.excerpt}</p>
+
+        <div className="mt-auto flex items-center justify-between gap-3 border-t border-slate-100 pt-4">
+          <div className="flex min-w-0 items-center gap-2">
+            {post.author_name && (
+              <>
+                <AuthorInitials name={post.author_name} />
+                <span className="truncate text-[11px] font-semibold text-slate-600">{post.author_name}</span>
+              </>
+            )}
+          </div>
+          <Link to={`/blog/${post.slug}`} className="inline-flex shrink-0 items-center gap-1 text-xs font-bold text-red-700 transition hover:gap-2">
+            Read
+            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+        </div>
+      </div>
+    </article>
+  )
+}
 
 function Blog() {
+  const { posts, status, reload } = usePublishedPosts()
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortOrder, setSortOrder] = useState('newest')
@@ -19,21 +85,23 @@ function Blog() {
   const filteredPosts = useMemo(() => {
     const query = searchQuery.trim().toLowerCase()
 
-    return blogPosts
+    return posts
       .filter((post) => selectedCategory === 'All' || post.category === selectedCategory)
       .filter((post) => {
         if (!query) return true
-        return [post.title, post.excerpt, post.author.name, ...post.tags]
+        return [post.title, post.excerpt, post.author_name, ...(post.tags || [])]
           .join(' ')
           .toLowerCase()
           .includes(query)
       })
       .sort((a, b) => {
-        if (sortOrder === 'shortest') return a.readTime - b.readTime
-        const diff = new Date(b.date) - new Date(a.date)
+        if (sortOrder === 'shortest') return (a.read_minutes || 0) - (b.read_minutes || 0)
+        // The featured post leads the default view
+        if (sortOrder === 'newest' && a.featured !== b.featured) return a.featured ? -1 : 1
+        const diff = (b.published_on || '').localeCompare(a.published_on || '')
         return sortOrder === 'oldest' ? -diff : diff
       })
-  }, [selectedCategory, searchQuery, sortOrder])
+  }, [posts, selectedCategory, searchQuery, sortOrder])
 
   // Any change to the filters should bring the list back to the first page.
   useEffect(() => {
@@ -47,9 +115,86 @@ function Blog() {
     setSearchQuery('')
   }
 
+  let content
+  if (status === 'loading') {
+    content = (
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8" aria-busy="true" aria-label="Loading articles">
+        {Array.from({ length: 3 }, (_, index) => (
+          <PostCardSkeleton key={index} />
+        ))}
+      </div>
+    )
+  } else if (status === 'error') {
+    content = (
+      <Message title="We couldn’t load the articles right now">
+        <button type="button" onClick={reload} className="mt-2 text-xs font-semibold text-red-600 hover:underline">
+          Try again
+        </button>
+      </Message>
+    )
+  } else if (!posts.length) {
+    content = (
+      <Message title="No articles yet">
+        <p className="mt-1 text-sm text-slate-400">Reflections, church news and testimonies will appear here soon.</p>
+      </Message>
+    )
+  } else {
+    content = (
+      <>
+        <div className="mb-8 flex items-center justify-between gap-4">
+          <p className="text-sm font-semibold text-slate-500">
+            Showing <span className="font-bold text-red-700">{visiblePosts.length}</span> of{' '}
+            <span className="font-bold text-slate-900">{filteredPosts.length}</span> article
+            {filteredPosts.length !== 1 ? 's' : ''}
+            {selectedCategory !== 'All' && (
+              <span className="text-slate-400"> in <em className="not-italic text-slate-700">{selectedCategory}</em></span>
+            )}
+          </p>
+          {hasFilters && (
+            <button type="button" onClick={clearFilters} className="shrink-0 text-xs font-semibold text-red-600 hover:underline">
+              Clear filters
+            </button>
+          )}
+        </div>
+
+        {filteredPosts.length === 0 ? (
+          <Message title="No articles match your search">
+            <button type="button" onClick={clearFilters} className="mt-2 text-xs font-semibold text-red-600 hover:underline">
+              Show all articles
+            </button>
+          </Message>
+        ) : (
+          <>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+              {visiblePosts.map((post) => (
+                <PostCard key={post.slug} post={post} />
+              ))}
+            </div>
+
+            {visibleCount < filteredPosts.length && (
+              <div className="mt-12 text-center">
+                <button
+                  type="button"
+                  onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-300 px-8 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 transition duration-200 hover:border-red-700 hover:bg-red-700 hover:text-white"
+                >
+                  Load more articles
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </>
+    )
+  }
+
   return (
     <main className="page-offset min-h-screen bg-white font-sans antialiased text-slate-900">
       <Seo
+        page="blog"
         title="Blog"
         path="/blog"
         type="blog"
@@ -58,13 +203,13 @@ function Blog() {
           '@context': 'https://schema.org',
           '@type': 'Blog',
           name: 'AIC Kabuku Journal',
-          blogPost: blogPosts.map((post) => ({
+          blogPost: posts.map((post) => ({
             '@type': 'BlogPosting',
             headline: post.title,
             description: post.excerpt,
-            datePublished: post.date,
-            image: post.image,
-            author: { '@type': 'Person', name: post.author.name },
+            datePublished: post.published_on,
+            image: post.cover_image_url || undefined,
+            author: post.author_name ? { '@type': 'Person', name: post.author_name } : undefined,
           })),
         }}
       />
@@ -75,9 +220,11 @@ function Blog() {
           <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
             Blog
           </h1>
-          <p className="text-xs font-semibold text-slate-500 sm:text-sm">
-            {blogPosts.length} articles &middot; new posts every fortnight
-          </p>
+          {posts.length > 0 && (
+            <p className="text-xs font-semibold text-slate-500 sm:text-sm">
+              {posts.length} {posts.length === 1 ? 'article' : 'articles'}
+            </p>
+          )}
         </div>
       </section>
 
@@ -86,7 +233,7 @@ function Blog() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-start justify-between gap-3 lg:flex-row lg:items-center">
             <div className="flex w-full items-center gap-2 overflow-x-auto pb-1 lg:w-auto lg:pb-0 [scrollbar-width:none]">
-              {blogCategories.map((category) => (
+              {FILTERS.map((category) => (
                 <button
                   key={category}
                   type="button"
@@ -134,112 +281,7 @@ function Blog() {
 
       {/* ── POST GRID ── */}
       <section className="bg-white py-12 lg:py-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-8 flex items-center justify-between gap-4">
-            <p className="text-sm font-semibold text-slate-500">
-              Showing <span className="font-bold text-red-700">{visiblePosts.length}</span> of{' '}
-              <span className="font-bold text-slate-900">{filteredPosts.length}</span> article
-              {filteredPosts.length !== 1 ? 's' : ''}
-              {selectedCategory !== 'All' && (
-                <span className="text-slate-400"> in <em className="not-italic text-slate-700">{selectedCategory}</em></span>
-              )}
-            </p>
-            {hasFilters && (
-              <button type="button" onClick={clearFilters} className="shrink-0 text-xs font-semibold text-red-600 hover:underline">
-                Clear filters
-              </button>
-            )}
-          </div>
-
-          {filteredPosts.length === 0 ? (
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 py-20 text-center">
-              <svg className="mx-auto h-10 w-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m0 0h2a2 2 0 012 2v9a2 2 0 01-2 2h-2m0-13v13M7 8h6M7 12h6" />
-              </svg>
-              <p className="mt-3 text-base font-bold text-slate-400">No articles match your search</p>
-              <button type="button" onClick={clearFilters} className="mt-2 text-xs font-semibold text-red-600 hover:underline">
-                Show all articles
-              </button>
-            </div>
-          ) : (
-            <>
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
-                {visiblePosts.map((post) => (
-                  <article
-                    key={post.slug}
-                    className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-slate-200/70"
-                  >
-                    <Link to={`/blog/${post.slug}`} className="relative block h-48 overflow-hidden bg-slate-100">
-                      <img
-                        src={post.image}
-                        alt={post.title}
-                        loading="lazy"
-                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                      />
-                      <span className="absolute left-3 top-3 rounded-full border border-slate-200 bg-white/90 px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider text-red-700 backdrop-blur">
-                        {post.category}
-                      </span>
-                      {post.featured && (
-                        <span className="absolute right-3 top-3 rounded-full bg-red-700 px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-lg">
-                          Featured
-                        </span>
-                      )}
-                      <span className="absolute bottom-3 right-3 rounded-full bg-slate-900/75 px-2.5 py-0.5 text-[10px] font-bold text-white backdrop-blur">
-                        {post.readTime} min
-                      </span>
-                    </Link>
-
-                    <div className="flex flex-1 flex-col p-5">
-                      <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                        {formatPostDate(post.date)}
-                      </p>
-                      <h3 className="mt-2 text-base font-bold leading-snug text-slate-900 transition group-hover:text-red-700">
-                        <Link to={`/blog/${post.slug}`}>{post.title}</Link>
-                      </h3>
-                      <p className="mt-2.5 text-xs leading-relaxed text-slate-500">{post.excerpt}</p>
-
-                      <div className="mt-auto flex items-center justify-between gap-3 border-t border-slate-100 pt-4">
-                        <div className="flex min-w-0 items-center gap-2">
-                          <img
-                            src={post.author.avatar}
-                            alt={post.author.name}
-                            loading="lazy"
-                            className="h-7 w-7 shrink-0 rounded-full border border-slate-200 object-cover"
-                          />
-                          <span className="truncate text-[11px] font-semibold text-slate-600">{post.author.name}</span>
-                        </div>
-                        <Link
-                          to={`/blog/${post.slug}`}
-                          className="inline-flex shrink-0 items-center gap-1 text-xs font-bold text-red-700 transition hover:gap-2"
-                        >
-                          Read
-                          <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-                          </svg>
-                        </Link>
-                      </div>
-                    </div>
-                  </article>
-                ))}
-              </div>
-
-              {visibleCount < filteredPosts.length && (
-                <div className="mt-12 text-center">
-                  <button
-                    type="button"
-                    onClick={() => setVisibleCount((count) => count + PAGE_SIZE)}
-                    className="inline-flex items-center gap-2 rounded-full border border-slate-300 px-8 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 transition duration-200 hover:border-red-700 hover:bg-red-700 hover:text-white"
-                  >
-                    Load more articles
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                </div>
-              )}
-            </>
-          )}
-        </div>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">{content}</div>
       </section>
 
       {/* ── NEWSLETTER ── */}

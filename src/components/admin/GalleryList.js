@@ -3,7 +3,7 @@ import api from '../../redux/api';
 import galleryItems, { galleryCategories } from '../../data/galleryItems';
 import GalleryUpload from './GalleryUpload';
 import Icon from './Icon';
-import { BUTTON, ConfirmDialog, DetailRow, DetailSection, muted, PreviewBanner, PRIMARY_BUTTON, Skeleton, SlideOver, Toast, useToast } from './ui';
+import { BUTTON, ConfirmDialog, DetailRow, DetailSection, Modal, muted, PreviewBanner, PRIMARY_BUTTON, Skeleton, Toast, useToast } from './ui';
 import useAdminList, { saveErrorMessages } from './useAdminList';
 import { formatDate, parseDate } from './utils';
 
@@ -144,7 +144,7 @@ function PhotoPanel({ photo, onClose, onSaved, onDelete }) {
   );
 
   return (
-    <SlideOver label="Photo" titleId="photo-panel-title" onClose={requestClose} footer={footer}>
+    <Modal titleId="photo-panel-title" onClose={requestClose} footer={footer}>
       <div className="flex max-h-[45vh] items-center justify-center bg-slate-950">
         {photo.image_url && !imageFailed ? (
           <img
@@ -206,7 +206,7 @@ function PhotoPanel({ photo, onClose, onSaved, onDelete }) {
           </DetailRow>
         )}
       </DetailSection>
-    </SlideOver>
+    </Modal>
   );
 }
 

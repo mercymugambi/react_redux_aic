@@ -30,6 +30,10 @@ const NAV_SECTIONS = [
     ],
   },
   {
+    title: 'Website',
+    items: [{ to: '/admin/settings', label: 'Site settings', icon: 'adjustments' }],
+  },
+  {
     title: 'Access',
     items: [
       { to: '/admin/users', label: 'Users', icon: 'shield' },

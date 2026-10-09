@@ -1,10 +1,34 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { formatPostDate, getPostBySlug, getRelatedPosts } from '../data/blogPosts'
+import { formatPostDate, relatedPosts as pickRelated } from '../data/blog'
+import { AuthorInitials, PostCover } from './BlogParts'
 import Seo from './Seo'
+import { usePublishedPost, usePublishedPosts } from './useBlogPosts'
 import { SITE_NAME } from '../seo/siteMeta'
 
-function ArticleBlock({ block }) {
+// A photo placed between paragraphs; left out entirely if it fails to load
+function ArticleImage({ url, caption }) {
+  const [failed, setFailed] = useState(false)
+  if (!url || failed) return null
+
+  return (
+    <figure className="my-10">
+      <img
+        src={url}
+        alt={caption || ''}
+        loading="lazy"
+        onError={() => setFailed(true)}
+        className="w-full rounded-2xl bg-slate-100 object-cover"
+      />
+      {caption && <figcaption className="mt-3 text-center text-sm leading-relaxed text-slate-500">{caption}</figcaption>}
+    </figure>
+  )
+}
+
+// Exported, with ArticleHeader, so the admin editor's preview matches this page
+export function ArticleBlock({ block }) {
+  if (block.type === 'image') return <ArticleImage url={block.url} caption={block.caption} />
+
   if (block.type === 'heading') {
     return (
       <h2 className="mt-11 scroll-mt-28 text-xl font-extrabold tracking-tight text-slate-900 sm:text-2xl">
@@ -44,6 +68,61 @@ function ArticleBlock({ block }) {
   return <p className="mt-6 text-base leading-8 text-slate-700">{block.text}</p>
 }
 
+// The cover band: breadcrumb, category, title, summary, author and date
+export function ArticleHeader({ post }) {
+  return (
+    <header className="relative isolate overflow-hidden bg-slate-950 text-white">
+      <PostCover src={post.cover_image_url} alt={post.title} className="absolute inset-0 -z-20 h-full w-full object-center" />
+      <div className="absolute inset-0 -z-10 bg-slate-950/75" />
+      <div className="absolute inset-0 -z-10 bg-gradient-to-t from-slate-950 via-slate-950/40 to-slate-950/70" />
+
+      <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 sm:py-20 lg:py-24">
+        <nav className="flex flex-wrap items-center text-xs font-bold uppercase tracking-widest text-slate-400">
+          <Link to="/" className="transition hover:text-red-300">Home</Link>
+          <span className="mx-2 text-slate-600">/</span>
+          <Link to="/blog" className="transition hover:text-red-300">Blog</Link>
+          {post.category && (
+            <>
+              <span className="mx-2 text-slate-600">/</span>
+              <span className="text-red-300">{post.category}</span>
+            </>
+          )}
+        </nav>
+
+        {post.category && (
+          <span className="mt-6 inline-block rounded-full bg-red-700 px-3.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
+            {post.category}
+          </span>
+        )}
+
+        <h1 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
+          {post.title}
+        </h1>
+        <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300">{post.excerpt}</p>
+
+        <div className="mt-9 flex flex-wrap items-center gap-4 border-t border-white/15 pt-6">
+          {post.author_name && (
+            <>
+              <AuthorInitials name={post.author_name} className="h-12 w-12 text-sm" />
+              <div className="leading-tight">
+                <p className="text-sm font-bold text-white">{post.author_name}</p>
+                {post.author_role && (
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-red-300">{post.author_role}</p>
+                )}
+              </div>
+              <span className="hidden h-8 w-px bg-white/20 sm:block" />
+            </>
+          )}
+          <div className="text-xs font-semibold text-slate-300">
+            <p>{formatPostDate(post.published_on)}</p>
+            {post.read_minutes > 0 && <p className="text-slate-400">{post.read_minutes} min read</p>}
+          </div>
+        </div>
+      </div>
+    </header>
+  )
+}
+
 function NotFound() {
   return (
     <main className="page-offset flex min-h-screen flex-col items-center justify-center bg-white px-4 text-center font-sans">
@@ -65,9 +144,53 @@ function NotFound() {
   )
 }
 
+function LoadingArticle() {
+  return (
+    <main className="page-offset min-h-screen bg-white font-sans" aria-busy="true" aria-label="Loading article">
+      <div className="bg-slate-950">
+        <div className="mx-auto max-w-3xl space-y-4 px-4 py-16 sm:px-6 sm:py-20 lg:py-24">
+          <div className="h-3 w-40 animate-pulse rounded bg-white/10" />
+          <div className="h-10 w-4/5 animate-pulse rounded bg-white/10" />
+          <div className="h-4 w-3/5 animate-pulse rounded bg-white/10" />
+        </div>
+      </div>
+      <div className="mx-auto max-w-3xl space-y-3 px-4 py-12 sm:px-6">
+        {Array.from({ length: 6 }, (_, index) => (
+          <div key={index} className="h-4 animate-pulse rounded bg-slate-100" />
+        ))}
+      </div>
+    </main>
+  )
+}
+
+function LoadError({ onRetry }) {
+  return (
+    <main className="page-offset flex min-h-screen flex-col items-center justify-center bg-white px-4 text-center font-sans">
+      <Seo title="Blog" path="/blog" noIndex />
+      <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">We couldn&apos;t load this article</h1>
+      <p className="mt-3 max-w-md text-sm text-slate-500">Please check your connection and try again.</p>
+      <button
+        type="button"
+        onClick={onRetry}
+        className="mt-8 inline-flex items-center gap-2 rounded-full bg-red-700 px-7 py-3 text-xs font-bold uppercase tracking-wider text-white transition hover:bg-red-800"
+      >
+        Try again
+      </button>
+    </main>
+  )
+}
+
+const wordsIn = (blocks = []) =>
+  blocks
+    .map((block) => [block.text, block.cite, ...(block.items || [])].join(' '))
+    .join(' ')
+    .split(/\s+/)
+    .filter(Boolean).length
+
 function BlogPost() {
   const { slug } = useParams()
-  const post = getPostBySlug(slug)
+  const { post, status, reload } = usePublishedPost(slug)
+  const { posts } = usePublishedPosts()
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
@@ -81,9 +204,13 @@ function BlogPost() {
     return () => window.clearTimeout(timer)
   }, [copied])
 
+  if (status === 'loading') return <LoadingArticle />
+  if (status === 'error') return <LoadError onRetry={reload} />
   if (!post) return <NotFound />
 
-  const relatedPosts = getRelatedPosts(post)
+  const relatedPosts = pickRelated(post, posts)
+  const body = post.body || []
+  const tags = post.tags || []
   const shareUrl = typeof window !== 'undefined' ? window.location.href : ''
   const shareText = encodeURIComponent(`${post.title} — AIC Kabuku`)
 
@@ -98,96 +225,50 @@ function BlogPost() {
         title={post.title}
         path={`/blog/${post.slug}`}
         description={post.excerpt}
-        image={post.image}
+        image={post.cover_image_url || undefined}
         type="article"
         jsonLd={{
           '@context': 'https://schema.org',
           '@type': 'BlogPosting',
           headline: post.title,
           description: post.excerpt,
-          image: post.image,
-          datePublished: post.date,
-          dateModified: post.date,
-          keywords: post.tags.join(', '),
+          image: post.cover_image_url || undefined,
+          datePublished: post.published_on,
+          dateModified: post.updated_at || post.published_on,
+          keywords: tags.join(', '),
           articleSection: post.category,
-          wordCount: post.body.reduce(
-            (total, block) =>
-              total + (block.text || (block.items || []).join(' ')).split(/\s+/).length,
-            0
-          ),
-          author: { '@type': 'Person', name: post.author.name, jobTitle: post.author.role },
+          wordCount: wordsIn(body),
+          author: post.author_name
+            ? { '@type': 'Person', name: post.author_name, jobTitle: post.author_role || undefined }
+            : undefined,
           publisher: { '@type': 'Organization', name: SITE_NAME },
           mainEntityOfPage: { '@type': 'WebPage', '@id': `/blog/${post.slug}` },
         }}
       />
 
       {/* ── COVER ── */}
-      <header className="relative isolate overflow-hidden bg-slate-950 text-white">
-        <img
-          src={post.image}
-          alt={post.title}
-          className="absolute inset-0 -z-20 h-full w-full object-cover object-center"
-        />
-        <div className="absolute inset-0 -z-10 bg-slate-950/75" />
-        <div className="absolute inset-0 -z-10 bg-gradient-to-t from-slate-950 via-slate-950/40 to-slate-950/70" />
-
-        <div className="mx-auto max-w-3xl px-4 py-16 sm:px-6 sm:py-20 lg:py-24">
-          <nav className="flex flex-wrap items-center text-xs font-bold uppercase tracking-widest text-slate-400">
-            <Link to="/" className="transition hover:text-red-300">Home</Link>
-            <span className="mx-2 text-slate-600">/</span>
-            <Link to="/blog" className="transition hover:text-red-300">Blog</Link>
-            <span className="mx-2 text-slate-600">/</span>
-            <span className="text-red-300">{post.category}</span>
-          </nav>
-
-          <span className="mt-6 inline-block rounded-full bg-red-700 px-3.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
-            {post.category}
-          </span>
-
-          <h1 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl lg:text-5xl">
-            {post.title}
-          </h1>
-          <p className="mt-5 max-w-2xl text-base leading-7 text-slate-300">{post.excerpt}</p>
-
-          <div className="mt-9 flex flex-wrap items-center gap-4 border-t border-white/15 pt-6">
-            <img
-              src={post.author.avatar}
-              alt={post.author.name}
-              className="h-12 w-12 rounded-full border-2 border-white/25 object-cover"
-            />
-            <div className="leading-tight">
-              <p className="text-sm font-bold text-white">{post.author.name}</p>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-red-300">
-                {post.author.role}
-              </p>
-            </div>
-            <span className="hidden h-8 w-px bg-white/20 sm:block" />
-            <div className="text-xs font-semibold text-slate-300">
-              <p>{formatPostDate(post.date)}</p>
-              <p className="text-slate-400">{post.readTime} min read</p>
-            </div>
-          </div>
-        </div>
-      </header>
+      <ArticleHeader post={post} />
 
       {/* ── ARTICLE ── */}
       <article className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:py-16">
-        {post.body.map((block, index) => (
-          <ArticleBlock key={`${block.type}-${index}`} block={block} />
+        {body.map((block, index) => (
+          <ArticleBlock key={`${block.type}-${index}-${block.url || ''}`} block={block} />
         ))}
 
         {/* Tags */}
-        <div className="mt-12 flex flex-wrap items-center gap-2 border-t border-slate-200 pt-8">
-          <span className="mr-1 text-xs font-bold uppercase tracking-wider text-slate-400">Tags</span>
-          {post.tags.map((tag) => (
-            <span key={tag} className="rounded-full bg-slate-100 px-3.5 py-1.5 text-xs font-semibold text-slate-600">
-              #{tag}
-            </span>
-          ))}
-        </div>
+        {tags.length > 0 && (
+          <div className="mt-12 flex flex-wrap items-center gap-2 border-t border-slate-200 pt-8">
+            <span className="mr-1 text-xs font-bold uppercase tracking-wider text-slate-400">Tags</span>
+            {tags.map((tag) => (
+              <span key={tag} className="rounded-full bg-slate-100 px-3.5 py-1.5 text-xs font-semibold text-slate-600">
+                #{tag}
+              </span>
+            ))}
+          </div>
+        )}
 
         {/* Share */}
-        <div className="mt-6 flex flex-wrap items-center gap-2.5">
+        <div className={`flex flex-wrap items-center gap-2.5 ${tags.length > 0 ? 'mt-6' : 'mt-12 border-t border-slate-200 pt-8'}`}>
           <span className="mr-1 text-xs font-bold uppercase tracking-wider text-slate-400">Share</span>
 
           <button
@@ -238,24 +319,23 @@ function BlogPost() {
         </div>
 
         {/* Author card */}
-        <aside className="mt-10 flex flex-col gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-6 sm:flex-row sm:items-center">
-          <img
-            src={post.author.avatar}
-            alt={post.author.name}
-            className="h-16 w-16 shrink-0 rounded-full border-2 border-white object-cover shadow-sm"
-          />
-          <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-red-700">Written by</p>
-            <p className="mt-0.5 text-lg font-bold text-slate-900">{post.author.name}</p>
-            <p className="mt-1 text-sm leading-relaxed text-slate-600">
-              {post.author.role} at AIC Kabuku. Have a question about this article, or a story of your own?{' '}
-              <Link to="/contact" className="font-semibold text-red-700 hover:underline">Get in touch</Link>.
-            </p>
-          </div>
-        </aside>
+        {post.author_name && (
+          <aside className="mt-10 flex flex-col gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-6 sm:flex-row sm:items-center">
+            <AuthorInitials name={post.author_name} className="h-16 w-16 text-lg" />
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-wider text-red-700">Written by</p>
+              <p className="mt-0.5 text-lg font-bold text-slate-900">{post.author_name}</p>
+              <p className="mt-1 text-sm leading-relaxed text-slate-600">
+                {post.author_role ? `${post.author_role} at AIC Kabuku. ` : ''}Have a question about this article, or a story of your own?{' '}
+                <Link to="/contact" className="font-semibold text-red-700 hover:underline">Get in touch</Link>.
+              </p>
+            </div>
+          </aside>
+        )}
       </article>
 
       {/* ── RELATED ── */}
+      {relatedPosts.length > 0 && (
       <section className="border-t border-slate-200 bg-slate-50 py-14 lg:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
@@ -283,19 +363,17 @@ function BlogPost() {
                 className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl hover:shadow-slate-200/70"
               >
                 <Link to={`/blog/${related.slug}`} className="relative block h-44 overflow-hidden bg-slate-100">
-                  <img
-                    src={related.image}
-                    alt={related.title}
-                    loading="lazy"
-                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                  />
-                  <span className="absolute left-3 top-3 rounded-full border border-slate-200 bg-white/90 px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider text-red-700 backdrop-blur">
-                    {related.category}
-                  </span>
+                  <PostCover src={related.cover_image_url} alt={related.title} className="h-full w-full transition duration-500 group-hover:scale-105" />
+                  {related.category && (
+                    <span className="absolute left-3 top-3 rounded-full border border-slate-200 bg-white/90 px-3 py-0.5 text-[10px] font-bold uppercase tracking-wider text-red-700 backdrop-blur">
+                      {related.category}
+                    </span>
+                  )}
                 </Link>
                 <div className="flex flex-1 flex-col p-5">
                   <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                    {formatPostDate(related.date)} · {related.readTime} min
+                    {formatPostDate(related.published_on)}
+                    {related.read_minutes > 0 && ` · ${related.read_minutes} min`}
                   </p>
                   <h3 className="mt-2 text-base font-bold leading-snug text-slate-900 transition group-hover:text-red-700">
                     <Link to={`/blog/${related.slug}`}>{related.title}</Link>
@@ -307,6 +385,7 @@ function BlogPost() {
           </div>
         </div>
       </section>
+      )}
     </main>
   )
 }

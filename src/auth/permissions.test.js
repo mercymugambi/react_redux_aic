@@ -16,6 +16,7 @@ const BACKEND_PERMISSIONS = [
   'manage_appointments',
   'manage_gallery',
   'manage_settings',
+  'manage_blog',
 ];
 
 const user = (overrides = {}) => ({ super_admin: false, roles: [], permissions: [], ...overrides });

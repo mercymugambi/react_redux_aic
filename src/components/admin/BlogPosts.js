@@ -1,31 +1,14 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import api from '../../redux/api';
-import { selectCurrentUser } from '../../redux/authSlice';
-import blogPosts from '../../data/blogPosts';
-import BlogEditor, { POST_CATEGORIES, readMinutes } from './BlogEditor';
+import { POST_CATEGORIES, readMinutes } from './BlogEditor';
 import Icon from './Icon';
 import { BUTTON, ConfirmDialog, isHttpUrl, PreviewBanner, PRIMARY_BUTTON, Skeleton, Toast, useToast } from './ui';
 import useAdminList, { saveErrorMessages } from './useAdminList';
 import { formatDate, parseDate } from './utils';
 
-// The posts built into the website, shaped like the API's, shown until the blog API exists
-const PREVIEW_POSTS = blogPosts.map((post, index) => ({
-  id: `site-${index + 1}`,
-  slug: post.slug,
-  title: post.title,
-  excerpt: post.excerpt,
-  body: post.body,
-  category: post.category,
-  status: 'published',
-  featured: Boolean(post.featured),
-  published_on: post.date,
-  tags: post.tags || [],
-  image: post.image,
-  author_name: post.author?.name,
-  author_role: post.author?.role,
-  created_at: post.date,
-}));
+// Until the blog API exists the list is empty and a banner explains why (see useAdminList)
+const NO_PREVIEW_POSTS = [];
 
 const TABS = [
   { key: 'all', label: 'All', test: () => true },
@@ -63,17 +46,17 @@ function Thumbnail({ src }) {
   );
 }
 
-function PostRow({ post, onEdit, onDelete, onToggleFeatured }) {
+function PostRow({ post, editPath, onDelete, onToggleFeatured }) {
   const date = postDate(post);
-  const minutes = post.body?.length ? readMinutes(post.body) : null;
+  const minutes = post.read_minutes || (post.body?.length ? readMinutes(post.body) : null);
   return (
     <li className="flex items-center gap-4 px-4 py-3 transition-colors hover:bg-slate-50/70">
-      <Thumbnail key={post.image} src={post.image} />
+      <Thumbnail key={post.cover_image_url} src={post.cover_image_url} />
       <div className="min-w-0 flex-1">
         <div className="flex items-start gap-1.5">
-          <button type="button" onClick={onEdit} className="line-clamp-2 text-left text-[13px] font-medium text-slate-900 hover:text-red-700 focus-visible:outline-none focus-visible:underline">
+          <Link to={editPath} className="line-clamp-2 text-left text-[13px] font-medium text-slate-900 hover:text-red-700 focus-visible:outline-none focus-visible:underline">
             {post.title || 'Untitled post'}
-          </button>
+          </Link>
           {post.featured && (
             <span title="Featured" className="mt-0.5 shrink-0 text-amber-500">
               <Icon name="star" className="h-3.5 w-3.5" strokeWidth={2} />
@@ -112,9 +95,9 @@ function PostRow({ post, onEdit, onDelete, onToggleFeatured }) {
         >
           <Icon name="star" className="h-3.5 w-3.5" strokeWidth={post.featured ? 2.25 : 1.75} />
         </button>
-        <button type="button" onClick={onEdit} aria-label={`Edit ${post.title}`} title="Edit" className={ICON_ACTION}>
+        <Link to={editPath} aria-label={`Edit ${post.title}`} title="Edit" className={ICON_ACTION}>
           <Icon name="pencil" className="h-3.5 w-3.5" />
-        </button>
+        </Link>
         <button type="button" onClick={onDelete} aria-label={`Delete ${post.title}`} title="Delete" className={ICON_ACTION}>
           <Icon name="trash" className="h-3.5 w-3.5" />
         </button>
@@ -138,21 +121,30 @@ function EmptyState({ icon, title, message, children }) {
 
 /* ── Page ── */
 function BlogPosts() {
-  const user = useSelector(selectCurrentUser);
-  const { rows: posts, loading, refreshing, error, preview, updatedAt, load } = useAdminList('/api/v1/blog_posts', {
+  const { rows: posts, loading, refreshing, error, preview, updatedAt, load } = useAdminList('/api/v1/blog_posts?status=all', {
     label: 'blog posts',
-    previewRows: PREVIEW_POSTS,
+    previewRows: NO_PREVIEW_POSTS,
   });
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const [tab, setTab] = useState('all');
   const [category, setCategory] = useState('');
   const [query, setQuery] = useState('');
-  const [editing, setEditing] = useState(null); // null, 'new', or a post
   const [deleting, setDeleting] = useState(null);
   const [deleteBusy, setDeleteBusy] = useState(false);
   const [deleteError, setDeleteError] = useState(null);
   const [actionError, setActionError] = useState(null);
   const [toast, flash] = useToast();
+
+  // A message from the editor, e.g. after deleting a post there. Cleared from the
+  // history entry so a refresh doesn't show it again.
+  const arrivedWith = location.state?.flash;
+  useEffect(() => {
+    if (!arrivedWith) return;
+    flash(arrivedWith);
+    navigate(location.pathname, { replace: true, state: null });
+  }, [arrivedWith, flash, navigate, location.pathname]);
 
   const counts = useMemo(() => Object.fromEntries(TABS.map(({ key, test }) => [key, posts.filter(test).length])), [posts]);
 
@@ -170,16 +162,6 @@ function BlogPosts() {
     setTab('all');
     setCategory('');
     setQuery('');
-  };
-
-  const closeEditor = useCallback(() => setEditing(null), []);
-
-  const handleSaved = (saved) => {
-    const wasNew = editing === 'new';
-    setEditing(null);
-    if (wasNew) flash(saved.status === 'draft' ? 'Draft saved' : 'Post published');
-    else flash('Changes saved');
-    load();
   };
 
   const toggleFeatured = async (post) => {
@@ -209,10 +191,10 @@ function BlogPosts() {
   };
 
   const newPostButton = (
-    <button type="button" onClick={() => setEditing('new')} className={PRIMARY_BUTTON}>
+    <Link to="/admin/blog/new" className={PRIMARY_BUTTON}>
       <Icon name="plus" className="h-3.5 w-3.5" strokeWidth={2} />
       New post
-    </button>
+    </Link>
   );
 
   let list;
@@ -271,7 +253,7 @@ function BlogPosts() {
             <PostRow
               key={post.id}
               post={post}
-              onEdit={() => setEditing(post)}
+              editPath={`/admin/blog/${post.id}`}
               onDelete={() => {
                 setDeleteError(null);
                 setDeleting(post);
@@ -308,8 +290,8 @@ function BlogPosts() {
 
         {preview && (
           <PreviewBanner>
-            <span className="font-medium">Preview.</span> The blog isn’t connected to the server yet, so you’re seeing the posts built into the website. Publishing, editing and deleting will
-            start working once the blog API is added.
+            <span className="font-medium">Not connected yet.</span> The server doesn’t have the blog API yet, so there are no posts to show. Writing, publishing and
+            deleting posts will start working once the blog API is added.
           </PreviewBanner>
         )}
 
@@ -395,7 +377,6 @@ function BlogPosts() {
         </section>
       </div>
 
-      {editing && <BlogEditor post={editing === 'new' ? null : editing} user={user} onClose={closeEditor} onSaved={handleSaved} />}
       {deleting && (
         <ConfirmDialog
           title="Delete this post?"

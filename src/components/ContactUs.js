@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import Seo from './Seo'
-import { CHURCH_INFO, SITE_NAME } from '../seo/siteMeta'
+import { CHURCH_INFO } from '../seo/siteMeta'
+import { useSiteSettings } from './SiteSettings'
+import { formatSlot, mainServices } from '../data/siteSettings'
 
-const gatherings = [
-  { day: 'Sunday', name: 'First Service', time: '8:00 AM – 10:00 AM', note: 'A calm start in worship and the Word.' },
-  { day: 'Sunday', name: 'Main Service', time: '10:30 AM – 1:00 PM', note: 'Worship, teaching and family fellowship.' },
-  { day: 'Wednesday', name: 'Bible Study', time: '5:30 PM – 7:00 PM', note: 'A midweek place to grow in Scripture.' },
-]
+const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+// "Sundays" → "Sunday", for search engines' opening hours; null for anything else
+const weekday = (day) => WEEKDAYS.find((name) => day.toLowerCase().startsWith(name.toLowerCase())) || null
 
 const fellowships = ['Youth Ministry', "Women’s Fellowship", "Men’s Ministry", 'Children’s Church']
 
@@ -18,6 +18,9 @@ function Icon({ children }) {
 function ContactUs() {
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', topic: 'General enquiry', message: '' })
   const [sent, setSent] = useState(false)
+  const { contact, seo, service_times: serviceTimes } = useSiteSettings()
+  const services = mainServices(serviceTimes)
+  const gatherings = services.map((service) => ({ day: service.day, name: service.name, time: service.slots.map(formatSlot).join(', '), note: service.description }))
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -34,13 +37,15 @@ function ContactUs() {
   return (
     <main className="page-offset bg-[#fcfcfb] font-sans text-slate-900">
       <Seo
+        page="contact"
         title="Contact Us & Plan Your Visit"
         path="/contact"
-        description="Get in touch with AIC Kabuku Church in Kiambu County, Kenya. Ask a question, request prayer, or plan your first visit — Sunday services at 8:00 AM and 10:30 AM."
         jsonLd={{
           '@context': 'https://schema.org',
           '@type': 'Church',
-          name: SITE_NAME,
+          name: seo.site_name,
+          telephone: contact.phone || undefined,
+          email: contact.email || undefined,
           legalName: CHURCH_INFO.legalName,
           address: {
             '@type': 'PostalAddress',
@@ -48,13 +53,17 @@ function ContactUs() {
             addressRegion: CHURCH_INFO.region,
             addressCountry: CHURCH_INFO.country,
           },
-          openingHoursSpecification: CHURCH_INFO.services.map((service) => ({
-            '@type': 'OpeningHoursSpecification',
-            dayOfWeek: `https://schema.org/${service.day}`,
-            opens: service.opens,
-            closes: service.closes,
-            name: service.name,
-          })),
+          openingHoursSpecification: services
+            .filter((service) => weekday(service.day))
+            .flatMap((service) =>
+              service.slots.map((slot) => ({
+                '@type': 'OpeningHoursSpecification',
+                dayOfWeek: `https://schema.org/${weekday(service.day)}`,
+                opens: slot.start,
+                closes: slot.end,
+                name: service.name,
+              }))
+            ),
         }}
       />
       <section className="border-b border-slate-200 bg-white px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
@@ -73,9 +82,9 @@ function ContactUs() {
             <h2 className="mt-3 text-3xl font-extrabold tracking-tight">You’re welcome here.</h2>
             <p className="mt-4 max-w-sm text-sm leading-7 text-slate-300">Reach out through the form and our team will respond as soon as they can. You can also find us in Kabuku every week.</p>
             <div className="mt-9 space-y-6 border-t border-white/10 pt-7">
-              <div className="flex gap-4"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/10 text-red-300"><svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M12 21s7-5.4 7-12A7 7 0 005 9c0 6.6 7 12 7 12z"/><circle cx="12" cy="9" r="2.2" strokeWidth="1.8"/></svg></span><div><p className="text-xs font-bold uppercase tracking-wider text-red-200">Visit us</p><p className="mt-1 text-sm text-white">Kabuku, Kiambu County, Kenya</p></div></div>
-              <div className="flex gap-4"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/10 text-red-300"><svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M4 5h16v14H4zM4 7l8 6 8-6"/></svg></span><div><p className="text-xs font-bold uppercase tracking-wider text-red-200">Send a message</p><p className="mt-1 text-sm text-white">Use the form — we’ll be in touch.</p></div></div>
-              <div className="flex gap-4"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/10 text-red-300"><svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" strokeWidth="1.8"/><path strokeLinecap="round" strokeWidth="1.8" d="M12 7v5l3 2"/></svg></span><div><p className="text-xs font-bold uppercase tracking-wider text-red-200">Office & pastoral care</p><p className="mt-1 text-sm text-white">We’ll reply as soon as possible.</p></div></div>
+              <div className="flex gap-4"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/10 text-red-300"><svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M12 21s7-5.4 7-12A7 7 0 005 9c0 6.6 7 12 7 12z"/><circle cx="12" cy="9" r="2.2" strokeWidth="1.8"/></svg></span><div><p className="text-xs font-bold uppercase tracking-wider text-red-200">Visit us</p><p className="mt-1 text-sm text-white">{contact.address}</p>{contact.map_url && <a href={contact.map_url} target="_blank" rel="noreferrer" className="mt-1 inline-block text-xs font-semibold text-red-300 hover:text-white">Open in Maps →</a>}</div></div>
+              <div className="flex gap-4"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/10 text-red-300"><svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M4 5h16v14H4zM4 7l8 6 8-6"/></svg></span><div><p className="text-xs font-bold uppercase tracking-wider text-red-200">Send a message</p>{contact.email || contact.phone ? <p className="mt-1 space-y-0.5 text-sm text-white">{contact.phone && <a href={`tel:${contact.phone.replace(/[^d+]/g, '')}`} className="block hover:text-red-200">{contact.phone}</a>}{contact.email && <a href={`mailto:${contact.email}`} className="block hover:text-red-200">{contact.email}</a>}</p> : <p className="mt-1 text-sm text-white">Use the form — we’ll be in touch.</p>}</div></div>
+              <div className="flex gap-4"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/10 text-red-300"><svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" strokeWidth="1.8"/><path strokeLinecap="round" strokeWidth="1.8" d="M12 7v5l3 2"/></svg></span><div><p className="text-xs font-bold uppercase tracking-wider text-red-200">Office & pastoral care</p><p className="mt-1 text-sm text-white">{contact.office_hours || 'We’ll reply as soon as possible.'}</p></div></div>
             </div>
             <div className="mt-10 border-l-2 border-red-500 pl-4"><p className="text-sm font-semibold leading-6 text-white">“Carry each other’s burdens, and in this way you will fulfil the law of Christ.”</p><p className="mt-2 text-xs font-bold uppercase tracking-[.16em] text-red-300">Galatians 6:2</p></div>
           </aside>

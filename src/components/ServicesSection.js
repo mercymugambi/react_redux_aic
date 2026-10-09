@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import serviceTimes from '../data/serviceTimes'
+import { useSiteSettings } from './SiteSettings'
+import { formatSlot } from '../data/siteSettings'
 
 // Background footage: "Vibrant church service with devoted congregation" by Enoch Samuel,
 // Pexels (free to use, no attribution required). Served from /public so it is cached
@@ -41,10 +42,10 @@ function ServiceList({ services, rowClassName }) {
         <div key={service.name} className={`flex flex-col gap-1.5 py-4 first:pt-0 last:pb-0 ${rowClassName}`}>
           <dt className="text-[15px] italic text-slate-500">{service.name}</dt>
           <div className="space-y-1.5">
-            {service.slots.map((slot) => (
-              <dd key={slot} className="flex items-center gap-2 whitespace-nowrap text-[15px] font-bold tabular-nums text-slate-900">
+            {service.slots.map((slot, index) => (
+              <dd key={index} className="flex items-center gap-2 whitespace-nowrap text-[15px] font-bold tabular-nums text-slate-900">
                 <ClockIcon />
-                {slot}
+                {formatSlot(slot)}
               </dd>
             ))}
           </div>
@@ -91,7 +92,8 @@ function DayCard({ day, tagline, services, note, rowsFrom = 'sm', delay = 0 }) {
 
 function ServicesSection() {
   const [showVideo] = useState(() => !prefersReducedMotion())
-  const [sunday, ...weekdays] = serviceTimes
+  // The first day (Sundays) gets the wide card; the others share the row beside it
+  const [sunday, ...weekdays] = useSiteSettings().service_times
 
   return (
     <section id="services" aria-labelledby="services-heading" className="relative isolate mt-16 overflow-hidden py-20 sm:mt-24 sm:py-28">
@@ -134,7 +136,7 @@ function ServicesSection() {
 
         <div className="mt-14 grid gap-6 lg:grid-cols-12 lg:gap-8">
           <div className="lg:col-span-7">
-            <DayCard {...sunday} />
+            {sunday && <DayCard {...sunday} />}
           </div>
 
           <div className="grid gap-6 sm:grid-cols-2 lg:col-span-5 lg:grid-cols-1 lg:gap-8">

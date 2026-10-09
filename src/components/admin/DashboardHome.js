@@ -15,7 +15,8 @@ import { MONTHS, dayStatus, downloadCsv, formatDate, parseDate, startOfDay, toIs
 const SOURCES = [
   { key: 'members', url: '/api/v1/members', label: 'members', page: '/admin/members' },
   { key: 'users', url: '/api/v1/users', label: 'users' },
-  { key: 'events', url: '/api/v1/events', label: 'events', page: '/admin/events' },
+  // Drafts, cancelled and past events too (drafts are left out of the counts below)
+  { key: 'events', url: '/api/v1/events?status=all&when=all', label: 'events', page: '/admin/events' },
   { key: 'devotions', url: '/api/v1/devotions', label: 'devotions', page: '/admin/devotions' },
   { key: 'fellowshipGroups', url: '/api/v1/fellowship_groups', label: 'fellowship groups', page: '/admin/fellowship-groups' },
   { key: 'leadershipPositions', url: '/api/v1/leadership_positions', label: 'leadership positions', page: '/admin/leadership-positions' },
@@ -447,7 +448,9 @@ function DashboardHome() {
       const [groupB, timeB] = rank(b);
       return groupA - groupB || timeA - timeB;
     });
-    const upcomingEvents = sortedEvents.filter((e) => eventDate(e) && dayStatus(eventDate(e), today) !== 'past');
+    const upcomingEvents = sortedEvents.filter(
+      (e) => eventDate(e) && dayStatus(eventDate(e), today) !== 'past' && e.status !== 'draft' && e.status !== 'cancelled'
+    );
 
     const sortedDevotions = [...devotions].sort(
       (a, b) => (devotionDate(b)?.getTime() || 0) - (devotionDate(a)?.getTime() || 0)

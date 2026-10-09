@@ -3,7 +3,7 @@ import api, { apiErrorMessage, apiErrorMessages } from '../../redux/api';
 import { humanize } from '../../auth/permissions';
 import Icon from './Icon';
 import MemberForm from './MemberForm';
-import { Avatar, BUTTON, Checkbox, ConfirmDialog, DetailRow, DetailSection, muted, PRIMARY_BUTTON, Skeleton, SlideOver, Toast, TONES, useToast } from './ui';
+import { Avatar, BUTTON, Checkbox, ConfirmDialog, DetailRow, DetailSection, Modal, muted, PRIMARY_BUTTON, Skeleton, Toast, TONES, useToast } from './ui';
 import { MONTHS, downloadCsv, formatDate, parseDate, startOfDay, toIsoDay } from './utils';
 
 /* ── Member fields ── */
@@ -213,7 +213,7 @@ function Notice({ tone = 'sky', icon = 'info', onDismiss, children }) {
   );
 }
 
-/* ── Member profile (slide-over) ── */
+/* ── Member profile (modal) ── */
 function ActionTile({ icon, label, href, onClick }) {
   const className =
     'flex flex-col items-center gap-1.5 rounded-xl border border-slate-200 bg-white/80 px-2 py-2.5 text-xs font-medium text-slate-700 backdrop-blur transition';
@@ -269,7 +269,7 @@ function MemberPanel({ member, today, onClose, onCopy, onEdit, onDelete }) {
   );
 
   return (
-    <SlideOver label="Member profile" titleId="member-panel-title" onClose={onClose} footer={footer}>
+    <Modal titleId="member-panel-title" onClose={onClose} footer={footer} size="sm">
       {/* Identity */}
       <div className="relative overflow-clip border-b border-slate-100 px-5 pb-5 pt-6">
         <div
@@ -365,7 +365,7 @@ function MemberPanel({ member, today, onClose, onCopy, onEdit, onDelete }) {
           )}
         </DetailRow>
       </DetailSection>
-    </SlideOver>
+    </Modal>
   );
 }
 

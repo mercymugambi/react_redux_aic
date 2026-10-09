@@ -1,7 +1,12 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import { useSiteSettings } from './SiteSettings'
+import { formatSlot, mainServices, SOCIAL_NETWORKS } from '../data/siteSettings'
 
 function Footer() {
+  const { contact, social, service_times: serviceTimes, seo } = useSiteSettings()
+  const socialLinks = SOCIAL_NETWORKS.filter((network) => social[network.key])
+
   return (
     <footer data-reveal className="bg-[#0a0b0e] text-slate-400 font-sans border-t border-white/10">
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
@@ -25,8 +30,38 @@ function Footer() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              Kabuku, Kiambu County, Kenya
+              {contact.address}
             </p>
+            {(contact.phone || contact.email) && (
+              <p className="mt-2 space-x-3 text-xs">
+                {contact.phone && (
+                  <a href={`tel:${contact.phone.replace(/[^\d+]/g, '')}`} className="transition hover:text-red-400">
+                    {contact.phone}
+                  </a>
+                )}
+                {contact.email && (
+                  <a href={`mailto:${contact.email}`} className="transition hover:text-red-400">
+                    {contact.email}
+                  </a>
+                )}
+              </p>
+            )}
+            {socialLinks.length > 0 && (
+              <ul className="mt-4 flex flex-wrap gap-2" aria-label="Follow us">
+                {socialLinks.map((network) => (
+                  <li key={network.key}>
+                    <a
+                      href={social[network.key]}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex rounded-full border border-white/15 px-3 py-1 text-[11px] font-semibold text-slate-300 transition hover:border-red-500 hover:text-white"
+                    >
+                      {network.label.replace(' (Twitter)', '')}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           {/* Col 2: Quick Links */}
@@ -73,18 +108,14 @@ function Footer() {
               Service Times
             </h4>
             <div className="mt-4 space-y-3 text-xs">
-              <div>
-                <p className="font-semibold text-white">Sunday First Service</p>
-                <p className="text-slate-400">8:00 AM - 10:00 AM</p>
-              </div>
-              <div>
-                <p className="font-semibold text-white">Sunday Main Service</p>
-                <p className="text-slate-400">10:30 AM - 1:00 PM</p>
-              </div>
-              <div>
-                <p className="font-semibold text-white">Wednesday Bible Study</p>
-                <p className="text-slate-400">5:30 PM - 7:00 PM</p>
-              </div>
+              {mainServices(serviceTimes).map((service) => (
+                <div key={`${service.day}-${service.name}`}>
+                  <p className="font-semibold text-white">{service.name}</p>
+                  <p className="text-slate-400">
+                    {service.day} · {service.slots.map(formatSlot).join(', ')}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -115,7 +146,7 @@ function Footer() {
 
         {/* Bottom copyright */}
         <div className="mt-12 border-t border-white/10 pt-6 text-center text-xs text-slate-500">
-          © {new Date().getFullYear()} AIC Kabuku Church. All rights reserved.
+          © {new Date().getFullYear()} {seo.site_name}. All rights reserved.
         </div>
       </div>
     </footer>

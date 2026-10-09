@@ -1,12 +1,6 @@
 import { useEffect } from 'react'
-import {
-  DEFAULT_DESCRIPTION,
-  DEFAULT_IMAGE,
-  DEFAULT_TITLE,
-  LOCALE,
-  SITE_NAME,
-  SITE_URL,
-} from '../seo/siteMeta'
+import { DEFAULT_IMAGE, LOCALE, SITE_URL } from '../seo/siteMeta'
+import { useSiteSettings } from './SiteSettings'
 
 // Dependency-free per-route metadata. React 18 does not hoist <meta> tags from
 // the tree, and react-helmet is unmaintained, so we write the head directly.
@@ -40,16 +34,25 @@ const absoluteUrl = (path = '/') => {
   return `${origin}${path}`
 }
 
+// The site name, home title and default description come from Site settings. `page` names
+// a page whose title and description admins can change there; saved ones win over the
+// `title` and `description` passed in.
 function Seo({
+  page,
   title,
-  description = DEFAULT_DESCRIPTION,
+  description,
   path = '/',
   image = DEFAULT_IMAGE,
   type = 'website',
   jsonLd,
   noIndex = false,
 }) {
-  const fullTitle = title ? `${title} | ${SITE_NAME}` : DEFAULT_TITLE
+  const { seo } = useSiteSettings()
+  const saved = (page && seo.pages[page]) || {}
+  const siteName = seo.site_name
+  const pageTitle = saved.title || title
+  const metaDescription = saved.description || description || seo.description
+  const fullTitle = pageTitle ? `${pageTitle} | ${siteName}` : seo.home_title
   const canonical = absoluteUrl(path)
   const imageUrl = image.startsWith('http') ? image : absoluteUrl(image)
   const serialisedJsonLd = jsonLd ? JSON.stringify(jsonLd) : null
@@ -57,23 +60,23 @@ function Seo({
   useEffect(() => {
     document.title = fullTitle
 
-    upsertMeta('name', 'description', description)
+    upsertMeta('name', 'description', metaDescription)
     upsertMeta('name', 'robots', noIndex ? 'noindex, nofollow' : 'index, follow')
     upsertLink('canonical', canonical)
 
-    upsertMeta('property', 'og:site_name', SITE_NAME)
+    upsertMeta('property', 'og:site_name', siteName)
     upsertMeta('property', 'og:locale', LOCALE)
     upsertMeta('property', 'og:type', type)
     upsertMeta('property', 'og:title', fullTitle)
-    upsertMeta('property', 'og:description', description)
+    upsertMeta('property', 'og:description', metaDescription)
     upsertMeta('property', 'og:url', canonical)
     upsertMeta('property', 'og:image', imageUrl)
 
     upsertMeta('name', 'twitter:card', 'summary_large_image')
     upsertMeta('name', 'twitter:title', fullTitle)
-    upsertMeta('name', 'twitter:description', description)
+    upsertMeta('name', 'twitter:description', metaDescription)
     upsertMeta('name', 'twitter:image', imageUrl)
-  }, [fullTitle, description, canonical, imageUrl, type, noIndex])
+  }, [fullTitle, metaDescription, siteName, canonical, imageUrl, type, noIndex])
 
   useEffect(() => {
     const scriptId = 'route-structured-data'

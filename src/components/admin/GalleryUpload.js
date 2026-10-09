@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import api from '../../redux/api';
 import { galleryCategories } from '../../data/galleryItems';
 import Icon from './Icon';
-import { BUTTON, PRIMARY_BUTTON, SlideOver } from './ui';
+import { BUTTON, Modal, PRIMARY_BUTTON } from './ui';
 import { saveErrorMessages } from './useAdminList';
 
 const MAX_FILES = 20;
@@ -193,15 +193,15 @@ function GalleryUpload({ onClose, onUploaded }) {
   );
 
   return (
-    <SlideOver label="Upload photos" titleId="gallery-upload-title" onClose={requestClose} footer={footer}>
+    <Modal
+      titleId="gallery-upload-title"
+      title="Add photos to the gallery"
+      description="Moments from services, fellowship and outreach, shown on the website’s Gallery page."
+      icon="upload"
+      onClose={requestClose}
+      footer={footer}
+    >
       <div className="space-y-5 px-5 py-5">
-        <div>
-          <h2 id="gallery-upload-title" className="text-lg font-semibold text-slate-900">
-            Add photos to the gallery
-          </h2>
-          <p className="mt-0.5 text-[13px] text-slate-500">Moments from services, fellowship and outreach, shown on the website’s Gallery page.</p>
-        </div>
-
         {/* Drop zone */}
         <div>
           <div
@@ -316,7 +316,7 @@ function GalleryUpload({ onClose, onUploaded }) {
           </div>
         )}
       </div>
-    </SlideOver>
+    </Modal>
   );
 }
 

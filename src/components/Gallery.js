@@ -27,6 +27,7 @@ function Gallery() {
   return (
     <main className="page-offset bg-[#fcfcfb] text-slate-900">
       <Seo
+        page="gallery"
         title="Photo Gallery"
         path="/gallery"
         description="Photos from worship, prayer, children's ministry and community outreach at AIC Kabuku — the people, praise and purpose that make our church family feel like home."
