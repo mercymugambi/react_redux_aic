@@ -18,9 +18,10 @@ import Blog from './components/Blog'
 import BlogPost from './components/BlogPost'
 import Footer from './components/Footer'
 import NoticeBar from './components/NoticeBar'
+import ContactBar, { CONTACT_BAR_HEIGHT, contactBarHasContent, contactBarItems } from './components/ContactBar'
 import Seo from './components/Seo'
 import { SiteSettingsProvider, useSiteSettings } from './components/SiteSettings'
-import { noticeIsLive, noticeKey } from './data/siteSettings'
+import { noticeIsLive, noticeKey, topBarShows } from './data/siteSettings'
 import Login from './components/Login'
 import NotFound from './components/NotFound'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -36,6 +37,8 @@ import DevotionsList from './components/admin/DevotionsList'
 import EventsList from './components/admin/EventsList'
 import BlogPosts from './components/admin/BlogPosts'
 import BlogEditor from './components/admin/BlogEditor'
+import CommentsList from './components/admin/CommentsList'
+import Reports from './components/admin/Reports'
 import GalleryList from './components/admin/GalleryList'
 import FellowshipGroupsList from './components/admin/FellowshipGroupsList'
 import LeadershipPositionsList from './components/admin/LeadershipPositionsList'
@@ -69,14 +72,25 @@ function readClosedNotice() {
 }
 
 function PublicSite() {
-  const { notice } = useSiteSettings()
+  const settings = useSiteSettings()
+  const { notice, top_bar: topBar } = settings
   const [adMounted, setAdMounted] = useState(false)
   // A closed notice stays closed in this browser until its text changes
   const [closedNotice, setClosedNotice] = useState(readClosedNotice)
   // Kept on the page just long enough to slide away once closed
   const [noticeLeaving, setNoticeLeaving] = useState(false)
-  const live = noticeIsLive(notice) && closedNotice !== noticeKey(notice)
+
+  // The strip above the navbar (Site settings › Top bar). "Automatic" shows the notice while it's live and
+  // the visitor hasn't closed it, and the contact & social bar the rest of the time.
+  const bar = topBarShows(topBar.mode, {
+    noticeLive: noticeIsLive(notice) && closedNotice !== noticeKey(notice),
+    contactReady: contactBarHasContent(contactBarItems(settings)),
+  })
+  const live = bar === 'notice'
   const showAd = adMounted && live
+  // After the notice is closed, the contact bar slides in once the notice has slid away
+  const contactMounted = adMounted && bar === 'contact'
+  const showContact = contactMounted && !noticeLeaving
 
   useEffect(() => {
     const adTimer = window.setTimeout(() => setAdMounted(true), 400)
@@ -103,8 +117,8 @@ function PublicSite() {
   // Keep the announcement bar's height in a CSS variable so the fixed navbar and
   // every page's top offset stay in sync as it slides in and out.
   useEffect(() => {
-    document.documentElement.style.setProperty('--ad-height', showAd ? '44px' : '0px')
-  }, [showAd])
+    document.documentElement.style.setProperty('--ad-height', showAd ? '44px' : showContact ? `${CONTACT_BAR_HEIGHT}px` : '0px')
+  }, [showAd, showContact])
 
   useEffect(() => {
     const prefersReducedMotion = typeof window.matchMedia === 'function' ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false
@@ -172,6 +186,7 @@ function PublicSite() {
     <div className="min-h-screen bg-white text-slate-900 font-sans antialiased">
       <div className="scroll-progress" aria-hidden="true" />
       {adMounted && (live || noticeLeaving) && <NoticeBar notice={notice} shown={showAd} onClose={closeNotice} />}
+      {contactMounted && <ContactBar settings={settings} shown={showContact} />}
       <Navbar />
       <Routes>
         <Route path="/" element={<HomePage />} />
@@ -220,6 +235,8 @@ function App() {
           <Route path="events" element={<EventsList />} />
           <Route path="blog" element={<BlogPosts />} />
           <Route path="blog/:postId" element={<BlogEditor />} />
+          <Route path="comments" element={<CommentsList />} />
+          <Route path="reports" element={<Reports />} />
           <Route path="gallery" element={<GalleryList />} />
           <Route path="fellowship-groups" element={<FellowshipGroupsList />} />
           <Route path="leadership-positions" element={<LeadershipPositionsList />} />

@@ -46,6 +46,25 @@ function Thumbnail({ src }) {
   );
 }
 
+// The post's comments, with those waiting for approval called out. Hidden until the API sends counts.
+function CommentsLink({ post }) {
+  const approved = post.comments_count || 0;
+  const pending = post.pending_comments_count || 0;
+  if (post.comments_count === undefined && post.pending_comments_count === undefined) return null;
+
+  return (
+    <Link
+      to={`/admin/comments?post=${post.id}`}
+      title="See this post’s comments"
+      className="inline-flex flex-wrap items-center gap-1 text-[11px] tabular-nums text-slate-400 transition hover:text-red-700"
+    >
+      <Icon name="chatBubble" className="h-3 w-3" />
+      {approved} {approved === 1 ? 'comment' : 'comments'}
+      {pending > 0 && <span className="rounded bg-amber-100 px-1 font-semibold text-amber-800">{pending} new</span>}
+    </Link>
+  );
+}
+
 function PostRow({ post, editPath, onDelete, onToggleFeatured }) {
   const date = postDate(post);
   const minutes = post.read_minutes || (post.body?.length ? readMinutes(post.body) : null);
@@ -70,6 +89,7 @@ function PostRow({ post, editPath, onDelete, onToggleFeatured }) {
           <StatusPill status={post.status} />
           {post.category && <span>{post.category}</span>}
           <span>{formatDate(date)}</span>
+          <CommentsLink post={post} />
         </p>
       </div>
       <div className="hidden w-36 shrink-0 text-xs text-slate-600 lg:block">{post.category || <span className="text-slate-300">—</span>}</div>
@@ -83,6 +103,7 @@ function PostRow({ post, editPath, onDelete, onToggleFeatured }) {
       <div className="hidden w-28 shrink-0 text-xs lg:block">
         <p className="text-slate-600">{formatDate(date)}</p>
         {minutes && <p className="text-[11px] text-slate-400">{minutes} min read</p>}
+        <CommentsLink post={post} />
       </div>
       <div className="flex shrink-0 gap-1">
         <button
@@ -147,6 +168,7 @@ function BlogPosts() {
   }, [arrivedWith, flash, navigate, location.pathname]);
 
   const counts = useMemo(() => Object.fromEntries(TABS.map(({ key, test }) => [key, posts.filter(test).length])), [posts]);
+  const pendingComments = posts.reduce((sum, post) => sum + (post.pending_comments_count || 0), 0);
 
   const visible = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -284,6 +306,15 @@ function BlogPosts() {
               <Icon name="refresh" className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />
               Refresh
             </button>
+            <Link to="/admin/comments" className={BUTTON}>
+              <Icon name="chatBubble" className="h-3.5 w-3.5" />
+              Comments
+              {pendingComments > 0 && (
+                <span className="rounded bg-amber-100 px-1.5 text-[11px] font-semibold tabular-nums text-amber-800" title={`${pendingComments} waiting for approval`}>
+                  {pendingComments}
+                </span>
+              )}
+            </Link>
             {newPostButton}
           </div>
         </header>

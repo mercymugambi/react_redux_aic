@@ -1,6 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 import api, { apiErrorMessage, apiErrorMessages } from '../../redux/api';
-import { humanize } from '../../auth/permissions';
+import { selectCurrentUser } from '../../redux/authSlice';
+import { canAccessPage, humanize } from '../../auth/permissions';
 import Icon from './Icon';
 import MemberForm from './MemberForm';
 import { Avatar, BUTTON, Checkbox, ConfirmDialog, DetailRow, DetailSection, Modal, muted, PRIMARY_BUTTON, Skeleton, Toast, TONES, useToast } from './ui';
@@ -371,6 +374,7 @@ function MemberPanel({ member, today, onClose, onCopy, onEdit, onDelete }) {
 
 /* ── Page ── */
 function MembersList() {
+  const canReport = useSelector((state) => canAccessPage(selectCurrentUser(state), '/admin/reports'));
   const [members, setMembers] = useState([]);
   const [groups, setGroups] = useState([]);
   const [accounts, setAccounts] = useState([]);
@@ -943,6 +947,12 @@ function MembersList() {
                 <Icon name="download" className="h-3.5 w-3.5" />
                 {selected.size ? 'Export selected' : 'Export'}
               </button>
+              {canReport && (
+                <Link to="/admin/reports" className={BUTTON}>
+                  <Icon name="printer" className="h-3.5 w-3.5" />
+                  Reports
+                </Link>
+              )}
             </div>
           </div>
 

@@ -1,6 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
+import { canAccessPage } from '../../auth/permissions';
 import api from '../../redux/api';
+import { selectCurrentUser } from '../../redux/authSlice';
 import FellowshipGroupForm, { memberFullName } from './FellowshipGroupForm';
 import Icon from './Icon';
 import { Avatar, BUTTON, Checkbox, ConfirmDialog, Modal, PRIMARY_BUTTON, Skeleton, Toast, TONES, useToast } from './ui';
@@ -161,6 +164,8 @@ function GroupPanel({ group, groupMembers, allMembers, membersAvailable, onClose
     }
   };
 
+  const canReport = useSelector((state) => canAccessPage(selectCurrentUser(state), '/admin/reports'));
+
   const footer = adding ? (
     <div className="flex items-center justify-between gap-2">
       <p className="text-xs text-slate-500">{picked.size ? `${plural(picked.size, 'member')} selected` : 'Choose who to add'}</p>
@@ -179,10 +184,18 @@ function GroupPanel({ group, groupMembers, allMembers, membersAvailable, onClose
         <Icon name="trash" className="h-3.5 w-3.5" />
         Delete group
       </button>
-      <button type="button" onClick={onEdit} className={PRIMARY_BUTTON}>
-        <Icon name="pencil" className="h-3.5 w-3.5" />
-        Edit group
-      </button>
+      <div className="flex gap-2">
+        {canReport && (
+          <Link to={`/admin/reports?type=groups&group=${group.id}`} className={BUTTON}>
+            <Icon name="printer" className="h-3.5 w-3.5" />
+            Roster report
+          </Link>
+        )}
+        <button type="button" onClick={onEdit} className={PRIMARY_BUTTON}>
+          <Icon name="pencil" className="h-3.5 w-3.5" />
+          Edit group
+        </button>
+      </div>
     </div>
   );
 
@@ -330,6 +343,7 @@ function GroupPanel({ group, groupMembers, allMembers, membersAvailable, onClose
 /* ── Page ── */
 function FellowshipGroupsList() {
   const { rows: groups, loading, refreshing, error, updatedAt, load } = useAdminList('/api/v1/fellowship_groups', { label: 'fellowship groups' });
+  const canReport = useSelector((state) => canAccessPage(selectCurrentUser(state), '/admin/reports'));
   const [members, setMembers] = useState([]);
   const [membersAvailable, setMembersAvailable] = useState(true);
 
@@ -503,6 +517,12 @@ function FellowshipGroupsList() {
               <Icon name="refresh" className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />
               Refresh
             </button>
+            {canReport && (
+              <Link to="/admin/reports?type=groups" className={BUTTON}>
+                <Icon name="printer" className="h-3.5 w-3.5" />
+                Reports
+              </Link>
+            )}
             {newButton}
           </div>
         </header>

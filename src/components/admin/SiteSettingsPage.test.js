@@ -46,7 +46,7 @@ it('loads the saved settings and previews the notice', async () => {
 it('saves every setting together and updates this browser’s copy of the site', async () => {
   renderPage();
   fireEvent.change(await screen.findByLabelText('Message'), { target: { value: 'Christmas carols on the 24th' } });
-  fireEvent.click(screen.getByRole('radio', { name: /Church red/ }));
+  fireEvent.click(within(screen.getByRole('radiogroup', { name: 'Colour' })).getByRole('radio', { name: /Church red/ }));
   expect(screen.getByText('You have unsaved changes')).toBeInTheDocument();
 
   fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
@@ -237,4 +237,49 @@ it('stops adding times, services and days at the API’s limits', async () => {
 
   for (let i = 0; i < 4; i += 1) fireEvent.click(screen.getByRole('button', { name: 'Add a day' }));
   expect(screen.getByRole('button', { name: 'Add a day' })).toBeDisabled();
+});
+
+it('switches the top bar to the contact & social bar and saves it', async () => {
+  api.get.mockResolvedValue({ data: { ...clone(SAVED), social: { ...SAVED.social, facebook: 'https://facebook.com/aickabuku' } } });
+  renderPage();
+  await screen.findByLabelText('Message');
+  expect(screen.getByText('Showing: your notice')).toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole('radio', { name: /Contact & social only/ }));
+  expect(screen.getByText('Showing: contact & social bar')).toBeInTheDocument();
+  // The preview uses the saved social links
+  expect(screen.getByRole('link', { name: 'Facebook' })).toHaveAttribute('href', 'https://facebook.com/aickabuku');
+  fireEvent.click(within(screen.getByRole('radiogroup', { name: 'Contact bar colour' })).getByRole('radio', { name: /Light/ }));
+  fireEvent.click(screen.getByRole('switch', { name: 'Show staff login link' }));
+
+  fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
+  await waitFor(() => expect(api.patch).toHaveBeenCalledTimes(1));
+  expect(api.patch.mock.calls[0][1].site_settings.top_bar).toEqual({ ...DEFAULT_SITE_SETTINGS.top_bar, mode: 'contact', style: 'light', show_login: true });
+  expect(await screen.findByText(/Saved: the website shows the changes now/)).toBeInTheDocument();
+});
+
+it('says so when the server doesn’t store the top bar yet, and keeps the choice in the form', async () => {
+  // An older API keeps only the sections it knows
+  api.patch.mockImplementation((url, body) => {
+    const stored = { ...body.site_settings };
+    delete stored.top_bar;
+    return Promise.resolve({ data: stored });
+  });
+  renderPage();
+  await screen.findByLabelText('Message');
+
+  fireEvent.click(screen.getByRole('radio', { name: /^Nothing/ }));
+  fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
+
+  expect(await screen.findByText(/the server doesn’t store the top bar choices yet/)).toBeInTheDocument();
+  expect(screen.getByRole('radio', { name: /^Nothing/ })).toBeChecked();
+  expect(screen.getByText('You have unsaved changes')).toBeInTheDocument();
+});
+
+it('points to Contact & social when the bar has none of those details yet', async () => {
+  renderPage();
+  await screen.findByLabelText('Message');
+  expect(screen.getByText('No phone number yet.')).toBeInTheDocument();
+  fireEvent.click(screen.getAllByRole('button', { name: 'Add it in Contact & social' })[0]);
+  expect(await screen.findByLabelText(/^Phone/)).toBeInTheDocument();
 });

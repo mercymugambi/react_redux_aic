@@ -22,11 +22,15 @@ export const PAGE_PERMISSIONS = {
   '/admin/members': 'manage_members',
   '/admin/fellowship-groups': 'manage_fellowship_groups',
   '/admin/leadership-positions': 'manage_leadership_positions',
+  // Member reports read the members and fellowship groups lists
+  '/admin/reports': 'view_reports',
   '/admin/events': 'manage_events',
   '/admin/devotions': 'manage_devotions',
   '/admin/blog': 'manage_blog',
   // The editor: /admin/blog/new, or /admin/blog/12 for an existing post
   '/admin/blog/:postId': 'manage_blog',
+  // Moderating what visitors post on blog posts
+  '/admin/comments': 'manage_blog',
   '/admin/gallery': 'manage_gallery',
   '/admin/users': 'manage_users',
   '/admin/users/new': SUPER_ADMIN,

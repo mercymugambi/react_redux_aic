@@ -18,6 +18,7 @@ const NAV_SECTIONS = [
       { to: '/admin/members', label: 'Members', icon: 'users' },
       { to: '/admin/fellowship-groups', label: 'Fellowship Groups', icon: 'group' },
       { to: '/admin/leadership-positions', label: 'Leadership Positions', icon: 'briefcase' },
+      { to: '/admin/reports', label: 'Reports', icon: 'printer' },
     ],
   },
   {
@@ -26,6 +27,7 @@ const NAV_SECTIONS = [
       { to: '/admin/events', label: 'Events', icon: 'calendar' },
       { to: '/admin/devotions', label: 'Devotions', icon: 'book' },
       { to: '/admin/blog', label: 'Blog', icon: 'newspaper' },
+      { to: '/admin/comments', label: 'Comments', icon: 'chatBubble' },
       { to: '/admin/gallery', label: 'Gallery', icon: 'photo' },
     ],
   },

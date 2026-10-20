@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import api, { apiErrorMessage } from '../../redux/api';
-import { DEFAULT_SITE_SETTINGS, formatSlot, NOTICE_STYLES, noticeIsLive, readSettings, SEO_PAGES, SOCIAL_NETWORKS } from '../../data/siteSettings';
+import { DEFAULT_SITE_SETTINGS, formatSlot, NOTICE_STYLES, noticeIsLive, readSettings, SEO_PAGES, SOCIAL_NETWORKS, TOP_BAR_MODES, TOP_BAR_STYLES, topBarShows } from '../../data/siteSettings';
+import ContactBar, { contactBarHasContent, contactBarItems } from '../ContactBar';
 import NoticeBar from '../NoticeBar';
 import Icon from './Icon';
 import { BUTTON, PreviewBanner, PRIMARY_BUTTON, Skeleton, Toast, useToast } from './ui';
@@ -11,7 +12,8 @@ import { formatDate, parseDate } from './utils';
 /* What admins can change about the public website. Everything is saved together. */
 
 const SECTIONS = [
-  { key: 'notice', label: 'Notice bar', icon: 'megaphone', hint: 'The announcement across the top' },
+  // Kept as `notice` so existing ?section=notice links still open it
+  { key: 'notice', label: 'Top bar', icon: 'megaphone', hint: 'Notice or contact & social bar' },
   { key: 'seo', label: 'Search & sharing', icon: 'search', hint: 'Titles and descriptions' },
   { key: 'contact', label: 'Contact & social', icon: 'phone', hint: 'Address, phone, links' },
   { key: 'services', label: 'Service times', icon: 'clock', hint: 'The weekly schedule' },
@@ -254,6 +256,131 @@ function NoticeSection({ notice, set, errors }) {
         </Field>
       </div>
     </Card>
+  );
+}
+
+// What visitors see above the navbar right now, for the mode chosen
+function topBarState(settings) {
+  const { mode } = settings.top_bar;
+  const bar = topBarShows(mode, { noticeLive: noticeIsLive(settings.notice), contactReady: contactBarHasContent(contactBarItems(settings)) });
+  if (bar === 'notice') return { tone: 'bg-emerald-50 text-emerald-700', label: 'Showing: your notice' };
+  if (bar === 'contact') return { tone: 'bg-emerald-50 text-emerald-700', label: 'Showing: contact & social bar' };
+  if (mode === 'off') return { tone: 'bg-slate-100 text-slate-600', label: 'Nothing above the navbar' };
+  if (mode === 'notice') return { tone: 'bg-slate-100 text-slate-600', label: 'Nothing now: no live notice' };
+  return { tone: 'bg-amber-50 text-amber-700', label: 'Nothing to show yet' };
+}
+
+const CONTACT_BAR_OPTIONS = [
+  { key: 'show_next_service', label: 'Next service', hint: 'From Service times. Shows “Live now” while a service is on.', needs: (s) => s.service_times.length > 0, missing: 'Add service times first.', section: 'services' },
+  { key: 'show_phone', label: 'Phone number', hint: 'Tap to call on phones.', needs: (s) => s.contact.phone.trim(), missing: 'No phone number yet.', section: 'contact' },
+  { key: 'show_email', label: 'Email', hint: 'Shown on wider screens.', needs: (s) => s.contact.email.trim(), missing: 'No email yet.', section: 'contact' },
+  { key: 'show_address', label: 'Location', hint: 'Links to your map when one is set.', needs: (s) => s.contact.address.trim(), missing: 'No address yet.', section: 'contact' },
+  { key: 'show_social', label: 'Social media icons', hint: 'Only the networks you’ve added.', needs: (s) => SOCIAL_NETWORKS.some(({ key }) => s.social[key].trim()), missing: 'No social links yet.', section: 'contact' },
+  { key: 'show_login', label: 'Staff login link', hint: 'A link to the admin sign-in page.', needs: () => true, section: null },
+];
+
+function TopBarSection({ settings, set, errors, goTo, notStored }) {
+  const topBar = settings.top_bar;
+  const state = topBarState(settings);
+  const contactUsed = topBar.mode === 'auto' || topBar.mode === 'contact';
+  const noticeUsed = topBar.mode === 'auto' || topBar.mode === 'notice';
+
+  return (
+    <>
+      <Card
+        title="Top bar"
+        description="The strip above the navbar on every page."
+        action={<span className={`rounded-md px-2 py-0.5 text-xs font-medium ${state.tone}`}>{state.label}</span>}
+      >
+        {notStored && (
+          <p role="alert" className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[13px] text-amber-800">
+            Everything else was saved, but the server doesn’t store the top bar choices yet, so the website still uses the default (Automatic, dark). They’ll save once the backend
+            adds the <code className="rounded bg-amber-100 px-1">top_bar</code> settings section.
+          </p>
+        )}
+        <div role="radiogroup" aria-label="What the top bar shows" className="grid gap-2 sm:grid-cols-2">
+          {TOP_BAR_MODES.map((mode) => {
+            const selected = topBar.mode === mode.key;
+            return (
+              <label
+                key={mode.key}
+                className={`flex cursor-pointer gap-3 rounded-lg border px-3.5 py-3 transition ${selected ? 'border-red-200 bg-red-50/40 ring-1 ring-red-200' : 'border-slate-200 hover:border-slate-300'}`}
+              >
+                <input type="radio" name="top-bar-mode" value={mode.key} checked={selected} onChange={() => set(['top_bar', 'mode'], mode.key)} className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-red-700" />
+                <span>
+                  <span className="block text-[13px] font-medium text-slate-900">
+                    {mode.label}
+                    {mode.key === 'auto' && <span className="ml-1.5 rounded bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-700">Recommended</span>}
+                  </span>
+                  <span className="mt-0.5 block text-xs text-slate-500">{mode.hint}</span>
+                </span>
+              </label>
+            );
+          })}
+        </div>
+      </Card>
+
+      <Card
+        title="Contact & social bar"
+        description={topBar.mode === 'auto' ? 'Shows whenever there’s no live notice, and after a visitor closes the notice.' : 'Times, contact details and social links, taken from your other settings.'}
+      >
+        <div className={contactUsed ? '' : 'opacity-50 grayscale'}>
+          <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Preview</p>
+          <div className="overflow-hidden rounded-lg">
+            <ContactBar settings={settings} preview />
+          </div>
+          {!contactUsed && <p className="mt-2 text-xs text-slate-500">Not shown with “{TOP_BAR_MODES.find(({ key }) => key === topBar.mode).label}”.</p>}
+        </div>
+
+        <div>
+          <p className="text-[13px] font-medium text-slate-700">Colour</p>
+          <div role="radiogroup" aria-label="Contact bar colour" className="mt-2 flex flex-wrap gap-2">
+            {Object.entries(TOP_BAR_STYLES).map(([key, style]) => {
+              const selected = topBar.style === key;
+              return (
+                <label key={key} className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-[13px] transition ${selected ? 'border-red-200 ring-1 ring-red-200' : 'border-slate-200 hover:border-slate-300'}`}>
+                  <input type="radio" name="top-bar-style" value={key} checked={selected} onChange={() => set(['top_bar', 'style'], key)} className="sr-only" />
+                  <span className={`h-4 w-4 rounded-full ${style.swatch}`} />
+                  <span className={selected ? 'font-medium text-slate-900' : 'text-slate-600'}>{style.label}</span>
+                  {selected && <Icon name="check" className="h-3.5 w-3.5 text-red-700" strokeWidth={2.5} />}
+                </label>
+              );
+            })}
+          </div>
+        </div>
+
+        <ul className="divide-y divide-slate-100 rounded-lg border border-slate-200">
+          {CONTACT_BAR_OPTIONS.map((option) => {
+            const available = Boolean(option.needs(settings));
+            return (
+              <li key={option.key} className="flex items-center justify-between gap-3 px-3.5 py-2.5">
+                <span className="min-w-0">
+                  <span className="block text-[13px] font-medium text-slate-800">{option.label}</span>
+                  <span className="block text-xs text-slate-500">
+                    {available ? (
+                      option.hint
+                    ) : (
+                      <>
+                        <span className="text-amber-700">{option.missing}</span>{' '}
+                        <button type="button" onClick={() => goTo(option.section)} className="font-medium text-red-700 hover:underline">
+                          Add {option.section === 'services' ? 'service times' : 'it in Contact & social'}
+                        </button>
+                      </>
+                    )}
+                  </span>
+                </span>
+                <Switch checked={topBar[option.key]} onChange={(value) => set(['top_bar', option.key], value)} label={`Show ${option.label.toLowerCase()}`} />
+              </li>
+            );
+          })}
+        </ul>
+      </Card>
+
+      <div className={noticeUsed ? '' : 'opacity-60'}>
+        {!noticeUsed && <p className="mb-2 text-xs text-slate-500">The notice isn’t shown while the top bar is set to “{TOP_BAR_MODES.find(({ key }) => key === topBar.mode).label}”.</p>}
+        <NoticeSection notice={settings.notice} set={set} errors={errors} />
+      </div>
+    </>
   );
 }
 
@@ -559,6 +686,7 @@ function SiteSettingsPage() {
   const [errors, setErrors] = useState({});
   const [serverErrors, setServerErrors] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [topBarNotStored, setTopBarNotStored] = useState(false);
   const [params, setParams] = useSearchParams();
   const [toast, flash] = useToast();
   const section = SECTIONS.some(({ key }) => key === params.get('section')) ? params.get('section') : 'notice';
@@ -629,7 +757,7 @@ function SiteSettingsPage() {
     setErrors(problems);
     const first = Object.keys(problems)[0];
     if (first) {
-      const sectionFor = { notice: 'notice', seo: 'seo', contact: 'contact', social: 'contact', service_times: 'services' }[first.split('.')[0]];
+      const sectionFor = { top_bar: 'notice', notice: 'notice', seo: 'seo', contact: 'contact', social: 'contact', service_times: 'services' }[first.split('.')[0]];
       setParams({ section: sectionFor });
       return;
     }
@@ -637,16 +765,21 @@ function SiteSettingsPage() {
     try {
       const response = await api.patch('/api/v1/site_settings', { site_settings: draft });
       // The API answers with the settings as saved
-      const settings = readSettings(response.data && typeof response.data === 'object' ? response.data : draft);
+      const answer = response.data && typeof response.data === 'object' ? response.data : null;
+      const settings = readSettings(answer || draft);
+      // A server that predates the top bar drops that section. Say so, and keep the admin's choices in the
+      // form (still unsaved) rather than quietly snapping back to the defaults.
+      const topBarDropped = Boolean(answer) && !('top_bar' in answer) && JSON.stringify(draft.top_bar) !== JSON.stringify(settings.top_bar);
+      setTopBarNotStored(topBarDropped);
       setSaved(settings);
-      setDraft(clone(settings));
+      setDraft(topBarDropped ? { ...clone(settings), top_bar: clone(draft.top_bar) } : clone(settings));
       // This browser's copy of the website picks the change up straight away
       try {
         window.localStorage.setItem(SITE_CACHE_KEY, JSON.stringify(settings));
       } catch (error) {
         // Storage blocked; the website refreshes them on its own
       }
-      flash('Saved: the website shows the changes now');
+      flash(topBarDropped ? 'Saved, except the top bar choices' : 'Saved: the website shows the changes now');
     } catch (err) {
       setServerErrors(saveErrorMessages(err, 'site settings', 'Could not save the settings. Please try again.'));
     } finally {
@@ -662,7 +795,7 @@ function SiteSettingsPage() {
         <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="text-[22px] font-semibold tracking-tight text-slate-900">Site settings</h1>
-            <p className="mt-1 text-[13px] text-slate-500">What visitors see across the website: the notice bar, search results, contact details and service times.</p>
+            <p className="mt-1 text-[13px] text-slate-500">What visitors see across the website: the top bar, search results, contact details and service times.</p>
           </div>
           <a href="/" target="_blank" rel="noreferrer" className={BUTTON}>
             <Icon name="globe" className="h-3.5 w-3.5" />
@@ -741,7 +874,7 @@ function SiteSettingsPage() {
                   </div>
                 </div>
               )}
-              {section === 'notice' && <NoticeSection notice={draft.notice} set={set} errors={errors} />}
+              {section === 'notice' && <TopBarSection settings={draft} set={set} errors={errors} goTo={(key) => setParams({ section: key })} notStored={topBarNotStored} />}
               {section === 'seo' && <SeoSection seo={draft.seo} set={set} errors={errors} />}
               {section === 'contact' && <ContactSection contact={draft.contact} social={draft.social} set={set} errors={errors} />}
               {section === 'services' && <ServicesSection days={draft.service_times} setDays={(days) => set(['service_times'], days)} errors={errors} />}

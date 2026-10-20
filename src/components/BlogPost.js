@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { formatPostDate, relatedPosts as pickRelated } from '../data/blog'
+import BlogComments from './BlogComments'
 import { AuthorInitials, PostCover } from './BlogParts'
 import Seo from './Seo'
 import { usePublishedPost, usePublishedPosts } from './useBlogPosts'
@@ -115,7 +116,17 @@ export function ArticleHeader({ post }) {
           )}
           <div className="text-xs font-semibold text-slate-300">
             <p>{formatPostDate(post.published_on)}</p>
-            {post.read_minutes > 0 && <p className="text-slate-400">{post.read_minutes} min read</p>}
+            {(post.read_minutes > 0 || post.comments_count > 0) && <p className="text-slate-400">
+              {post.read_minutes > 0 && `${post.read_minutes} min read`}
+              {post.comments_count > 0 && (
+                <>
+                  {post.read_minutes > 0 && ' · '}
+                  <a href="#comments" className="transition hover:text-red-300">
+                    {post.comments_count} {post.comments_count === 1 ? 'comment' : 'comments'}
+                  </a>
+                </>
+              )}
+            </p>}
           </div>
         </div>
       </div>
@@ -325,13 +336,13 @@ function BlogPost() {
             <div>
               <p className="text-[11px] font-bold uppercase tracking-wider text-red-700">Written by</p>
               <p className="mt-0.5 text-lg font-bold text-slate-900">{post.author_name}</p>
-              <p className="mt-1 text-sm leading-relaxed text-slate-600">
-                {post.author_role ? `${post.author_role} at AIC Kabuku. ` : ''}Have a question about this article, or a story of your own?{' '}
-                <Link to="/contact" className="font-semibold text-red-700 hover:underline">Get in touch</Link>.
-              </p>
+              {post.author_role && <p className="mt-1 text-sm leading-relaxed text-slate-600">{post.author_role} at AIC Kabuku</p>}
             </div>
           </aside>
         )}
+
+        {/* ── COMMENTS ── */}
+        <BlogComments key={post.slug} slug={post.slug} />
       </article>
 
       {/* ── RELATED ── */}

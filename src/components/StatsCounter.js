@@ -62,7 +62,7 @@ function StatsCounter() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
         </svg>
       ),
-      number: "2000+",
+      number: "200+",
       label: "Active Members"
     },
     {
@@ -71,7 +71,7 @@ function StatsCounter() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 002 2h1.5a2.5 2.5 0 002.5-2.5V7.065M12 2a10 10 0 100 20 10 10 0 000-20z" />
         </svg>
       ),
-      number: "1475+",
+      number: "15+",
       label: "Ministries & Outreach"
     },
     {
@@ -80,7 +80,7 @@ function StatsCounter() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
         </svg>
       ),
-      number: "5470+",
+      number: "80+",
       label: "Volunteers"
     },
     {
@@ -89,7 +89,7 @@ function StatsCounter() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
         </svg>
       ),
-      number: "150,045+",
+      number: "1,500+",
       label: "Lives Impacted"
     }
   ]

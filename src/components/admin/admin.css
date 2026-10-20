@@ -189,3 +189,45 @@
     animation: none;
   }
 }
+
+/* ══════════════════════════════════════════════════
+   Printing a report (Reports.js)
+   The report is copied into #report-print-root, a direct child of <body>, just
+   for printing. Everything else on the page is left out of the printout, so a
+   long report isn't cut off by the dashboard's own scrolling panel.
+   ══════════════════════════════════════════════════ */
+@media screen {
+  #report-print-root {
+    display: none;
+  }
+}
+
+@media print {
+  body > *:not(#report-print-root) {
+    display: none !important;
+  }
+
+  #report-print-root {
+    display: block;
+    color: #0f172a;
+    font-size: 11px;
+  }
+
+  #report-print-root table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  #report-print-root thead {
+    display: table-header-group;
+  }
+
+  #report-print-root tr,
+  #report-print-root .report-keep-together {
+    break-inside: avoid;
+  }
+
+  @page {
+    margin: 14mm 12mm;
+  }
+}

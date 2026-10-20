@@ -9,6 +9,20 @@ export const NOTICE_STYLES = {
   green: { label: 'Green', bar: 'bg-emerald-800 shadow-emerald-900/40', button: 'text-emerald-800 hover:bg-emerald-50', swatch: 'bg-emerald-800' },
 }
 
+// What the strip above the navbar shows
+export const TOP_BAR_MODES = [
+  { key: 'auto', label: 'Automatic', hint: 'Your notice while one is showing; the contact & social bar the rest of the time.' },
+  { key: 'notice', label: 'Notice only', hint: 'Only the notice. Nothing shows when there isn’t one.' },
+  { key: 'contact', label: 'Contact & social only', hint: 'Always the contact & social bar, even if a notice is switched on.' },
+  { key: 'off', label: 'Nothing', hint: 'No bar above the navbar.' },
+]
+
+export const TOP_BAR_STYLES = {
+  dark: { label: 'Dark', bar: 'bg-slate-950 text-slate-300', hover: 'hover:text-white', divider: 'bg-white/10', muted: 'text-slate-400', strong: 'text-white', icon: 'bg-white/5 text-slate-300 ring-white/10', chip: 'bg-white/5 ring-white/10', swatch: 'bg-slate-950' },
+  light: { label: 'Light', bar: 'border-b border-slate-200 bg-white text-slate-600', hover: 'hover:text-red-700', divider: 'bg-slate-200', muted: 'text-slate-400', strong: 'text-slate-900', icon: 'bg-slate-100 text-slate-500 ring-slate-200/70', chip: 'bg-slate-50 ring-slate-200', swatch: 'bg-white ring-1 ring-slate-300' },
+  red: { label: 'Church red', bar: 'bg-red-800 text-red-50/90', hover: 'hover:text-white', divider: 'bg-white/15', muted: 'text-red-200/80', strong: 'text-white', icon: 'bg-white/10 text-white/90 ring-white/15', chip: 'bg-white/10 ring-white/15', swatch: 'bg-red-800' },
+}
+
 // Pages with their own search title and description
 export const SEO_PAGES = [
   { key: 'about', label: 'About Us', path: '/aboutus' },
@@ -30,6 +44,17 @@ export const SOCIAL_NETWORKS = [
 const slot = (start, end) => ({ start, end })
 
 export const DEFAULT_SITE_SETTINGS = {
+  // The contact & social bar takes its phone, email, address and links from `contact` and `social`
+  top_bar: {
+    mode: 'auto',
+    style: 'dark',
+    show_phone: true,
+    show_email: true,
+    show_address: true,
+    show_next_service: true,
+    show_social: true,
+    show_login: false,
+  },
   notice: {
     enabled: true,
     label: 'Notice',
@@ -145,7 +170,17 @@ export function normalizeServiceTimes(days) {
 // Settings from the API or the browser's cache, safe to render
 export function readSettings(saved) {
   const settings = mergeSettings(DEFAULT_SITE_SETTINGS, saved)
-  return { ...settings, service_times: normalizeServiceTimes(settings.service_times) }
+  const topBar = settings.top_bar
+  const defaults = DEFAULT_SITE_SETTINGS.top_bar
+  return {
+    ...settings,
+    top_bar: {
+      ...topBar,
+      mode: TOP_BAR_MODES.some(({ key }) => key === topBar.mode) ? topBar.mode : defaults.mode,
+      style: TOP_BAR_STYLES[topBar.style] ? topBar.style : defaults.style,
+    },
+    service_times: normalizeServiceTimes(settings.service_times),
+  }
 }
 
 // "08:30" → "0830Hrs", the way the church writes service times
@@ -168,6 +203,63 @@ export function noticeIsLive(notice, today = todayIso()) {
   if (notice.starts_on && today < notice.starts_on) return false
   if (notice.ends_on && today > notice.ends_on) return false
   return true
+}
+
+const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+
+// "Sundays", "Sunday", "sunday morning" → 0; anything that isn't a weekday → -1
+export function weekdayOf(label) {
+  const word = (label || '').trim().toLowerCase().split(/[\s,]+/)[0].replace(/s$/, '')
+  return WEEKDAYS.findIndex((day) => day.toLowerCase() === word)
+}
+
+const at = (date, time) => {
+  const [hours, minutes] = time.split(':').map(Number)
+  const result = new Date(date)
+  result.setHours(hours, minutes, 0, 0)
+  return result
+}
+
+// The service happening now, or the next one to start: main services, or every service when none is marked main.
+//   { name, start: Date, end: Date, live, when: 'Today' | 'Tomorrow' | 'Sunday' … }
+// null when no day is named after a weekday or no times are set.
+export function nextService(serviceTimes, now = new Date()) {
+  const anyMain = serviceTimes.some((day) => day.services.some((service) => service.main))
+  const candidates = []
+  serviceTimes.forEach((day) => {
+    const weekday = weekdayOf(day.day)
+    if (weekday < 0) return
+    day.services
+      .filter((service) => !anyMain || service.main)
+      .forEach((service) =>
+        service.slots.forEach((slot) => {
+          if (!/^\d{2}:\d{2}$/.test(slot.start) || !/^\d{2}:\d{2}$/.test(slot.end) || slot.end <= slot.start) return
+          for (let offset = 0; offset <= 7; offset += 1) {
+            const date = new Date(now)
+            date.setDate(now.getDate() + offset)
+            if (date.getDay() !== weekday) continue
+            const start = at(date, slot.start)
+            const end = at(date, slot.end)
+            if (end <= now) continue
+            candidates.push({ name: service.name, start, end, offset })
+            break
+          }
+        })
+      )
+  })
+  if (!candidates.length) return null
+  const next = candidates.sort((a, b) => a.start - b.start)[0]
+  const when = next.offset === 0 ? 'Today' : next.offset === 1 ? 'Tomorrow' : WEEKDAYS[next.start.getDay()]
+  return { name: next.name, start: next.start, end: next.end, live: next.start <= now, when }
+}
+
+// Which bar sits above the navbar: 'notice', 'contact' or null.
+//   noticeLive:   the notice is switched on, has a message, is inside its dates and this visitor hasn't closed it
+//   contactReady: the contact & social bar has something to show
+export function topBarShows(mode, { noticeLive, contactReady }) {
+  if ((mode === 'auto' || mode === 'notice') && noticeLive) return 'notice'
+  if ((mode === 'auto' || mode === 'contact') && contactReady) return 'contact'
+  return null
 }
 
 // Identifies one notice's text, so a visitor who closed it doesn't see it again until it changes
