@@ -1,5 +1,6 @@
 import React, { useLayoutEffect, useRef, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
+import BookingModal from './BookingModal'
 
 // The link for the page you're on keeps the red hover colour, so visitors can always tell where they are.
 // `end` on Home stops "/" from matching every page; other links stay active on their sub-pages (e.g. /blog/:slug).
@@ -15,6 +16,7 @@ const mobileLinkClass = ({ isActive }) =>
 
 function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [bookingOpen, setBookingOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const barRef = useRef(null)
 
@@ -41,10 +43,10 @@ function Navbar() {
     { label: 'Home', path: '/' },
     { label: 'About Us', path: '/aboutus' },
     { label: 'Events', path: '/events' },
-    { label: 'Sermons', href: '/#sermons' },
     { label: 'Gallery', path: '/gallery' },
     { label: 'Blog', path: '/blog' },
     { label: 'Contact Us', path: '/contact' },
+    { label: 'Giving', href: '/giving' },
   ]
 
   return (
@@ -102,16 +104,16 @@ function Navbar() {
         {/* ── Right Actions: Visit Button & Icons ── */}
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           {/* Book Appointment Pill Button */}
-          <Link
-            to="/contact"
+          <button
+            type="button"
+            onClick={() => setBookingOpen(true)}
             className="hidden whitespace-nowrap rounded-full bg-red-700 px-5 py-2.5 font-sans text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-red-700/30 transition-all duration-200 hover:bg-red-800 hover:shadow-red-700/50 hover:scale-105 active:scale-95 md:inline-flex items-center gap-1.5"
           >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
             Book Appointment
-          </Link>
+          </button>
 
           {/* Share Icon */}
           <button
@@ -201,7 +203,7 @@ function Navbar() {
             </svg>
             <input
               type="text"
-              placeholder="Search sermons, events, blog..."
+              placeholder="Search giving, events, blog..."
               className="w-full bg-transparent text-sm text-slate-800 placeholder-slate-400 focus:outline-none font-sans"
               autoFocus
             />
@@ -236,17 +238,18 @@ function Navbar() {
               )
             )}
             <div className="mt-2 pt-3 border-t border-slate-100">
-              <Link
-                to="/contact"
-                onClick={() => setMobileMenuOpen(false)}
+              <button
+                type="button"
+                onClick={() => { setMobileMenuOpen(false); setBookingOpen(true) }}
                 className="inline-flex w-full justify-center rounded-full bg-red-700 py-2.5 font-sans text-sm font-bold uppercase tracking-wider text-white"
               >
                 Book Appointment
-              </Link>
+              </button>
             </div>
           </div>
         </div>
       )}
+      <BookingModal open={bookingOpen} onClose={() => setBookingOpen(false)} />
     </nav>
   )
 }
