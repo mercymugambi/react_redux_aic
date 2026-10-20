@@ -106,7 +106,7 @@ function AboutSection() {
       {/* ────────────────────────────────────────────────────────────
           SECTION 1: CHURCH BRIEF & STORY
       ─────────────────────────────────────────────────────────── */}
-      <section data-reveal className="bg-white py-16 sm:py-24">
+      <section data-reveal className="bg-white pb-14 pt-10 sm:pb-20 sm:pt-14">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-12 lg:grid-cols-12 lg:items-center">
             
@@ -142,9 +142,9 @@ function AboutSection() {
                 <span className="h-2 w-2 rounded-full bg-red-600" />
                 Know Our Story & Mission
               </p>
-              <h2 className="mt-3 font-sans text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+              <h1 className="mt-3 font-sans text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
                 Welcome to AIC Kabuku Church
-              </h2>
+              </h1>
               <div className="mt-4 h-1 w-16 bg-red-700 rounded-full" />
 
               <p className="mt-6 text-sm leading-relaxed text-slate-600 sm:text-base">
@@ -181,7 +181,7 @@ function AboutSection() {
       {/* ────────────────────────────────────────────────────────────
           SECTION 2: VIDEO SHOWCASE
       ─────────────────────────────────────────────────────────── */}
-      <section data-reveal className="bg-slate-50 border-y border-slate-200 py-16 sm:py-20">
+      <section data-reveal className="bg-slate-50 border-y border-slate-200 py-14 sm:py-16">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
           
           <div className="text-center max-w-2xl mx-auto mb-10">
@@ -271,11 +271,11 @@ function AboutSection() {
           SECTION 3: CHURCH MILESTONES TIMELINE
           (Styled & Structured exactly after the user reference design)
       ───────────────────────────────────────────────────────────── */}
-      <section data-reveal className="relative bg-slate-100 py-16 sm:py-24 text-slate-900">
+      <section data-reveal className="relative bg-slate-100 py-14 text-slate-900 sm:py-16">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          
+
           {/* Header */}
-          <div className="text-center max-w-3xl mx-auto mb-16 sm:mb-20">
+          <div className="text-center max-w-3xl mx-auto mb-10 sm:mb-12">
             <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight sm:text-4xl lg:text-5xl">
               Our Church Milestones
             </h2>
@@ -292,7 +292,7 @@ function AboutSection() {
             <div className="absolute top-0 bottom-0 left-6 lg:left-1/2 w-0.5 -translate-x-1/2 bg-slate-300" />
 
             {/* Timeline Cards List */}
-            <div className="space-y-12 sm:space-y-16">
+            <div className="space-y-8 lg:space-y-6">
               {milestones.map((item, index) => {
                 const isEven = index % 2 === 1
 
@@ -315,7 +315,7 @@ function AboutSection() {
                         isEven ? 'lg:mr-auto' : 'lg:ml-auto'
                       }`}
                     >
-                      <div className="relative rounded-2xl bg-white p-6 shadow-xl shadow-slate-200/60 border border-slate-200/80 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
+                      <div className="relative rounded-2xl bg-white p-5 sm:p-6 shadow-xl shadow-slate-200/60 border border-slate-200/80 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1">
                         
                         {/* Triangular Arrow indicator towards line on desktop */}
                         <div

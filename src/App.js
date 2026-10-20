@@ -5,7 +5,6 @@ import Header from './components/Header'
 import EventHighlight from './components/EventHighlight'
 import ServicesSection from './components/ServicesSection'
 import RecentCauses from './components/RecentCauses'
-import HomeAboutSection from './components/HomeAboutSection'
 import AboutUs from './components/AboutUs'
 import StatsCounter from './components/StatsCounter'
 import MinistriesSection from './components/MinistriesSection'
@@ -50,7 +49,6 @@ function HomePage() {
       <EventHighlight />
       <ServicesSection />
       <RecentCauses />
-      <HomeAboutSection />
       <StatsCounter />
       <MinistriesSection />
       <ScriptureBanner />

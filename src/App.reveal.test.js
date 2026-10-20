@@ -38,7 +38,7 @@ test('reveals About Us sections after client-side navigation from the home page'
 
   fireEvent.click(screen.getAllByRole('link', { name: /about us/i })[0]);
 
-  await screen.findByRole('heading', { name: /about aic kabuku church/i });
+  await screen.findByRole('heading', { level: 1, name: /welcome to aic kabuku church/i });
 
   const aboutSections = container.querySelectorAll('#about [data-reveal]');
   expect(aboutSections.length).toBeGreaterThan(0);

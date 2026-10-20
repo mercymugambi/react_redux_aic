@@ -26,5 +26,5 @@ test.each([
   expect(() => {
     fireEvent.click(screen.getAllByRole('link', { name: /about us/i })[0]);
   }).not.toThrow();
-  expect(screen.getByRole('heading', { name: /about aic kabuku church/i })).toBeInTheDocument();
+  expect(screen.getByRole('heading', { level: 1, name: /welcome to aic kabuku church/i })).toBeInTheDocument();
 });

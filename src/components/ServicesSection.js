@@ -96,7 +96,7 @@ function ServicesSection() {
   const [sunday, ...weekdays] = useSiteSettings().service_times
 
   return (
-    <section id="services" aria-labelledby="services-heading" className="relative isolate mt-16 overflow-hidden py-20 sm:mt-24 sm:py-28">
+    <section id="services" aria-labelledby="services-heading" className="relative isolate mt-8 overflow-hidden py-14 sm:mt-12 sm:py-20">
       {/* Background: muted looping congregation footage (a still image when motion is reduced) */}
       {showVideo ? (
         <video
@@ -134,7 +134,7 @@ function ServicesSection() {
           </p>
         </div>
 
-        <div className="mt-14 grid gap-6 lg:grid-cols-12 lg:gap-8">
+        <div className="mt-10 grid gap-6 lg:grid-cols-12 lg:gap-8">
           <div className="lg:col-span-7">
             {sunday && <DayCard {...sunday} />}
           </div>
