@@ -160,7 +160,7 @@ function ServicesSection() {
                   to="/contact"
                   className="inline-flex items-center gap-2 rounded-full bg-red-700 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white transition hover:bg-red-600"
                 >
-                  Plan your visit
+                  Book appointment
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                   </svg>

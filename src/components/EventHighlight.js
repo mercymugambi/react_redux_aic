@@ -164,7 +164,7 @@ function EventHighlight() {
         actions={
           <>
             <Link to="/contact" className={PRIMARY}>
-              <span>Plan your visit</span>
+              <span>Book appointment</span>
               <Arrow />
             </Link>
             <Link to="/events" className={SECONDARY}>

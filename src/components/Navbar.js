@@ -101,7 +101,7 @@ function Navbar() {
 
         {/* ── Right Actions: Visit Button & Icons ── */}
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-          {/* Plan a Visit Pill Button */}
+          {/* Book Appointment Pill Button */}
           <Link
             to="/contact"
             className="hidden whitespace-nowrap rounded-full bg-red-700 px-5 py-2.5 font-sans text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-red-700/30 transition-all duration-200 hover:bg-red-800 hover:shadow-red-700/50 hover:scale-105 active:scale-95 md:inline-flex items-center gap-1.5"
@@ -110,7 +110,7 @@ function Navbar() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
-            Plan a Visit
+            Book Appointment
           </Link>
 
           {/* Share Icon */}
@@ -241,7 +241,7 @@ function Navbar() {
                 onClick={() => setMobileMenuOpen(false)}
                 className="inline-flex w-full justify-center rounded-full bg-red-700 py-2.5 font-sans text-sm font-bold uppercase tracking-wider text-white"
               >
-                Plan a Visit
+                Book Appointment
               </Link>
             </div>
           </div>
