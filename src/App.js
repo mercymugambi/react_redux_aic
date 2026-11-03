@@ -14,6 +14,7 @@ import FaqSection from './components/FaqSection'
 import Events from './components/Events'
 import Gallery from './components/Gallery'
 import ContactUs from './components/ContactUs'
+import Giving from './components/Giving'
 import Blog from './components/Blog'
 import BlogPost from './components/BlogPost'
 import Footer from './components/Footer'
@@ -183,6 +184,7 @@ function PublicSite() {
         <Route path="/blog" element={<Blog />} />
         <Route path="/blog/:slug" element={<BlogPost />} />
         <Route path="/contact" element={<ContactUs />} />
+        <Route path="/giving" element={<Giving />} />
         <Route path="/contact-admin" element={<NotFound variant="adminHelp" />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

@@ -46,7 +46,7 @@ function Navbar() {
     { label: 'Gallery', path: '/gallery' },
     { label: 'Blog', path: '/blog' },
     { label: 'Contact Us', path: '/contact' },
-    { label: 'Giving', href: '/giving' },
+    { label: 'Giving', path: '/giving' },
   ]
 
   return (
