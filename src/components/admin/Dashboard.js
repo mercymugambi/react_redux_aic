@@ -16,6 +16,8 @@ const NAV_SECTIONS = [
     title: 'Congregation',
     items: [
       { to: '/admin/members', label: 'Members', icon: 'users' },
+      { to: '/admin/appointments', label: 'Appointments', icon: 'clock' },
+      { to: '/admin/payments', label: 'M-Pesa Transactions', icon: 'heart' },
       { to: '/admin/fellowship-groups', label: 'Fellowship Groups', icon: 'group' },
       { to: '/admin/leadership-positions', label: 'Leadership Positions', icon: 'briefcase' },
     ],

@@ -20,6 +20,8 @@ export const SUPER_ADMIN = Symbol('super_admin');
 export const PAGE_PERMISSIONS = {
   '/admin': null,
   '/admin/members': 'manage_members',
+  '/admin/appointments': 'manage_appointments',
+  '/admin/payments': 'manage_finance',
   '/admin/fellowship-groups': 'manage_fellowship_groups',
   '/admin/leadership-positions': 'manage_leadership_positions',
   '/admin/events': 'manage_events',
