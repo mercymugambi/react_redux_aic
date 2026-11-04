@@ -30,6 +30,8 @@ import Dashboard from './components/admin/Dashboard'
 import DashboardHome from './components/admin/DashboardHome'
 import NotAuthorized from './components/admin/NotAuthorized'
 import MembersList from './components/admin/MembersList'
+import AppointmentsList from './components/admin/AppointmentsList'
+import PaymentsList from './components/admin/PaymentsList'
 import UsersList from './components/admin/UsersList'
 import AddUser from './components/admin/AddUser'
 import RolesList from './components/admin/RolesList'
@@ -215,6 +217,8 @@ function App() {
         <Route element={<PermissionRoute />}>
           <Route index element={<DashboardHome />} />
           <Route path="members" element={<MembersList />} />
+          <Route path="appointments" element={<AppointmentsList />} />
+          <Route path="payments" element={<PaymentsList />} />
           <Route path="users" element={<UsersList />} />
           <Route path="users/new" element={<AddUser />} />
           <Route path="roles" element={<RolesList />} />

@@ -110,6 +110,12 @@ const authSlice = createSlice({
       state.sessionStatus = 'idle';
       state.sessionExpired = true;
     },
+    updateCurrentUser(state, action) {
+      state.user = action.payload;
+      if (action.payload) {
+        localStorage.setItem('user', JSON.stringify(action.payload));
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -155,7 +161,7 @@ const authSlice = createSlice({
   },
 });
 
-export const { clearError, clearSessionExpired } = authSlice.actions;
+export const { clearError, clearSessionExpired, updateCurrentUser } = authSlice.actions;
 
 // Selectors
 export const selectCurrentUser = (state) => state.auth.user;

@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom'
 import { Link } from 'react-router-dom'
 
 const PASTOR_EMAIL = 'mercymugambi2016@gmail.com'
-const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:3001'
+const API_BASE = process.env.REACT_APP_API_URL || 'http://localhost:3000'
 
 const TIME_SLOTS = [
   '08:00 AM', '09:00 AM', '10:00 AM', '11:00 AM',
@@ -171,13 +171,17 @@ export default function BookingModal({ open, onClose }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (!form.phone || !form.phone.trim()) {
+      setError('Please enter your phone number.')
+      return
+    }
     setLoading(true); setError('')
     const dateStr = `${viewYear}-${String(viewMonth+1).padStart(2,'0')}-${String(selDay).padStart(2,'0')}`
     try {
       const res = await fetch(`${API_BASE}/api/v1/appointments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ appointment: { ...form, appointment_date: dateStr, appointment_time: selTime, pastor_email: PASTOR_EMAIL } })
+        body: JSON.stringify({ appointment: { ...form, phone: form.phone.trim(), appointment_date: dateStr, appointment_time: selTime, pastor_email: PASTOR_EMAIL } })
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Booking failed')
@@ -397,7 +401,7 @@ export default function BookingModal({ open, onClose }) {
                   {[
                     { label:'Full Name', key:'name', type:'text', placeholder:'Your full name', required:true },
                     { label:'Email Address', key:'email', type:'email', placeholder:'your@email.com', required:true },
-                    { label:'Phone (optional)', key:'phone', type:'tel', placeholder:'+254 7XX XXX XXX', required:false },
+                    { label:'Phone Number', key:'phone', type:'tel', placeholder:'0712 345 678', required:true },
                   ].map(({ label, key, type, placeholder, required }) => (
                     <div key={key}>
                       <label className="block text-[11px] font-bold text-slate-500 mb-1 uppercase tracking-wide">{label}</label>
@@ -449,11 +453,11 @@ export default function BookingModal({ open, onClose }) {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7"/>
                     </svg>
                   </div>
-                  <h3 className="font-sans text-lg font-bold text-slate-800 mb-1">All Set!</h3>
+                  <h3 className="font-sans text-lg font-bold text-slate-800 mb-1">Appointment Scheduled!</h3>
                   <p className="text-red-700 font-semibold text-sm">{dateLabel} &middot; {selTime}</p>
-                  <p className="text-slate-400 text-xs mt-3 leading-relaxed">
-                    Confirmation emails sent to you and the pastor.<br/>
-                    You&apos;ll hear back if rescheduling is needed.
+                  <p className="text-slate-500 text-xs mt-3 leading-relaxed">
+                    Your appointment has been scheduled.<br/>
+                    You will be notified via email once the pastor confirms your appointment or if a reschedule is requested.
                   </p>
                   <div className="mt-6 flex flex-col gap-2">
                     <button type="button" onClick={handleClose}
