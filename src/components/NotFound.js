@@ -38,7 +38,9 @@ function NotFound({ variant = 'notFound' }) {
   const location = useLocation()
   const navigate = useNavigate()
 
-  useEffect(() => window.scrollTo(0, 0), [])
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
 
   return (
     <main className="page-offset relative overflow-hidden bg-[#fcfcfb] font-sans text-slate-900">

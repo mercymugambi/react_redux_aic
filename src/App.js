@@ -3,8 +3,8 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Header from './components/Header'
 import EventHighlight from './components/EventHighlight'
+import ServicesSection from './components/ServicesSection'
 import RecentCauses from './components/RecentCauses'
-import HomeAboutSection from './components/HomeAboutSection'
 import AboutUs from './components/AboutUs'
 import StatsCounter from './components/StatsCounter'
 import MinistriesSection from './components/MinistriesSection'
@@ -14,9 +14,14 @@ import FaqSection from './components/FaqSection'
 import Events from './components/Events'
 import Gallery from './components/Gallery'
 import ContactUs from './components/ContactUs'
+import Giving from './components/Giving'
 import Blog from './components/Blog'
 import BlogPost from './components/BlogPost'
 import Footer from './components/Footer'
+import NoticeBar from './components/NoticeBar'
+import Seo from './components/Seo'
+import { SiteSettingsProvider, useSiteSettings } from './components/SiteSettings'
+import { noticeIsLive, noticeKey } from './data/siteSettings'
 import Login from './components/Login'
 import NotFound from './components/NotFound'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -31,17 +36,20 @@ import RolesList from './components/admin/RolesList'
 import DevotionsList from './components/admin/DevotionsList'
 import EventsList from './components/admin/EventsList'
 import BlogPosts from './components/admin/BlogPosts'
+import BlogEditor from './components/admin/BlogEditor'
 import GalleryList from './components/admin/GalleryList'
 import FellowshipGroupsList from './components/admin/FellowshipGroupsList'
 import LeadershipPositionsList from './components/admin/LeadershipPositionsList'
+import SiteSettingsPage from './components/admin/SiteSettingsPage'
 
 function HomePage() {
   return (
     <>
+      <Seo />
       <Header />
       <EventHighlight />
+      <ServicesSection />
       <RecentCauses />
-      <HomeAboutSection />
       <StatsCounter />
       <MinistriesSection />
       <ScriptureBanner />
@@ -51,18 +59,47 @@ function HomePage() {
   )
 }
 
+const NOTICE_CLOSED_KEY = 'aic:notice-closed'
+
+function readClosedNotice() {
+  try {
+    return window.localStorage.getItem(NOTICE_CLOSED_KEY)
+  } catch (error) {
+    return null
+  }
+}
+
 function PublicSite() {
-  const [showAd, setShowAd] = useState(false)
+  const { notice } = useSiteSettings()
   const [adMounted, setAdMounted] = useState(false)
+  // A closed notice stays closed in this browser until its text changes
+  const [closedNotice, setClosedNotice] = useState(readClosedNotice)
+  // Kept on the page just long enough to slide away once closed
+  const [noticeLeaving, setNoticeLeaving] = useState(false)
+  const live = noticeIsLive(notice) && closedNotice !== noticeKey(notice)
+  const showAd = adMounted && live
 
   useEffect(() => {
-    const adTimer = window.setTimeout(() => {
-      setAdMounted(true)
-      setShowAd(true)
-    }, 400)
-
+    const adTimer = window.setTimeout(() => setAdMounted(true), 400)
     return () => window.clearTimeout(adTimer)
   }, [])
+
+  useEffect(() => {
+    if (!noticeLeaving) return undefined
+    const leaveTimer = window.setTimeout(() => setNoticeLeaving(false), 500)
+    return () => window.clearTimeout(leaveTimer)
+  }, [noticeLeaving])
+
+  const closeNotice = () => {
+    const key = noticeKey(notice)
+    setClosedNotice(key)
+    setNoticeLeaving(true)
+    try {
+      window.localStorage.setItem(NOTICE_CLOSED_KEY, key)
+    } catch (error) {
+      // Closed for this visit only
+    }
+  }
 
   // Keep the announcement bar's height in a CSS variable so the fixed navbar and
   // every page's top offset stay in sync as it slides in and out.
@@ -71,28 +108,51 @@ function PublicSite() {
   }, [showAd])
 
   useEffect(() => {
-    const revealItems = document.querySelectorAll('[data-reveal]')
     const prefersReducedMotion = typeof window.matchMedia === 'function' ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false
+    const canAnimate = !prefersReducedMotion && typeof window.IntersectionObserver !== 'undefined'
 
-    if (prefersReducedMotion || typeof window.IntersectionObserver === 'undefined') {
-      revealItems.forEach((item) => item.classList.add('is-visible'))
-      return undefined
+    const observer = canAnimate
+      ? new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return
+
+            entry.target.classList.add('is-visible')
+            observer.unobserve(entry.target)
+          })
+        },
+        { threshold: 0.12, rootMargin: '0px 0px -56px' }
+      )
+      : null
+
+    const reveal = (item) => {
+      if (item.classList.contains('is-visible')) return
+      if (observer) observer.observe(item)
+      else item.classList.add('is-visible')
     }
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return
+    const revealWithin = (node) => {
+      if (!(node instanceof Element)) return
+      if (node.matches('[data-reveal]')) reveal(node)
+      node.querySelectorAll('[data-reveal]').forEach(reveal)
+    }
 
-          entry.target.classList.add('is-visible')
-          observer.unobserve(entry.target)
-        })
-      },
-      { threshold: 0.12, rootMargin: '0px 0px -56px' }
-    )
+    revealWithin(document.body)
 
-    revealItems.forEach((item) => observer.observe(item))
+    // Pages rendered after a client-side navigation (or once their data loads) add new
+    // [data-reveal] elements. Without this they keep opacity: 0 until a full reload.
+    const mutationObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => mutation.addedNodes.forEach(revealWithin))
+    })
+    mutationObserver.observe(document.body, { childList: true, subtree: true })
 
+    return () => {
+      mutationObserver.disconnect()
+      if (observer) observer.disconnect()
+    }
+  }, [])
+
+  useEffect(() => {
     const updateScrollProgress = () => {
       const scrollableHeight = document.documentElement.scrollHeight - window.innerHeight
       const progress = scrollableHeight > 0 ? (window.scrollY / scrollableHeight) * 100 : 0
@@ -104,7 +164,6 @@ function PublicSite() {
     window.addEventListener('resize', updateScrollProgress)
 
     return () => {
-      observer.disconnect()
       window.removeEventListener('scroll', updateScrollProgress)
       window.removeEventListener('resize', updateScrollProgress)
     }
@@ -113,47 +172,7 @@ function PublicSite() {
   return (
     <div className="min-h-screen bg-white text-slate-900 font-sans antialiased">
       <div className="scroll-progress" aria-hidden="true" />
-      {adMounted && (
-        <div
-          className={`fixed inset-x-0 top-0 z-60 bg-blue-800 shadow-lg shadow-blue-900/40 transition-transform duration-500 ${showAd ? 'translate-y-0' : '-translate-y-full'}`}
-        >
-          <div className="mx-auto flex h-11 w-full max-w-7xl items-center justify-between gap-3 px-4 sm:px-6">
-            {/* Left: marquee-style announcement text */}
-            <div className="flex flex-1 items-center gap-3 overflow-hidden">
-              <span className="shrink-0 flex items-center gap-1.5 rounded-sm bg-white/20 pl-1 pr-2.5 py-0.5">
-                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white shadow-sm">
-                  <img src="/favicon.ico" alt="AIC logo" className="h-3.5 w-3.5" />
-                </span>
-                <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-white">Notice</span>
-              </span>
-              <span className="truncate text-xs font-semibold text-white/95 sm:text-sm">
-                Watch sermons on YouTube for encouraging messages and worship every week.
-              </span>
-            </div>
-            {/* Right: CTA + Close */}
-            <div className="flex shrink-0 items-center gap-2">
-              <a
-                href="https://youtube.com"
-                target="_blank"
-                rel="noreferrer"
-                className="hidden rounded-sm bg-white px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-blue-800 transition duration-200 hover:bg-blue-50 sm:inline-flex"
-              >
-                Watch Sermons
-              </a>
-              <button
-                type="button"
-                onClick={() => setShowAd(false)}
-                aria-label="Close announcement"
-                className="ml-1 flex h-7 w-7 items-center justify-center rounded-sm border border-white/30 bg-white/10 text-white/80 transition hover:bg-white/20 hover:text-white"
-              >
-                <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {adMounted && (live || noticeLeaving) && <NoticeBar notice={notice} shown={showAd} onClose={closeNotice} />}
       <Navbar />
       <Routes>
         <Route path="/" element={<HomePage />} />
@@ -165,6 +184,7 @@ function PublicSite() {
         <Route path="/blog" element={<Blog />} />
         <Route path="/blog/:slug" element={<BlogPost />} />
         <Route path="/contact" element={<ContactUs />} />
+        <Route path="/giving" element={<Giving />} />
         <Route path="/contact-admin" element={<NotFound variant="adminHelp" />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
@@ -177,7 +197,7 @@ function App() {
   return (
     <Routes>
       {/* Public website */}
-      <Route path="/*" element={<PublicSite />} />
+      <Route path="/*" element={<SiteSettingsProvider><PublicSite /></SiteSettingsProvider>} />
 
       {/* Login */}
       <Route path="/login" element={<Login />} />
@@ -201,9 +221,11 @@ function App() {
           <Route path="devotions" element={<DevotionsList />} />
           <Route path="events" element={<EventsList />} />
           <Route path="blog" element={<BlogPosts />} />
+          <Route path="blog/:postId" element={<BlogEditor />} />
           <Route path="gallery" element={<GalleryList />} />
           <Route path="fellowship-groups" element={<FellowshipGroupsList />} />
           <Route path="leadership-positions" element={<LeadershipPositionsList />} />
+          <Route path="settings" element={<SiteSettingsPage />} />
         </Route>
         <Route path="not-authorized" element={<NotAuthorized />} />
         <Route path="*" element={<Navigate to="/admin" replace />} />

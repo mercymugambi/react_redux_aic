@@ -1,7 +1,7 @@
 import React, { useMemo, useRef, useState } from 'react';
 import api from '../../redux/api';
 import Icon from './Icon';
-import { BUTTON, PRIMARY_BUTTON, SlideOver } from './ui';
+import { BUTTON, Modal, PRIMARY_BUTTON } from './ui';
 import { saveErrorMessages } from './useAdminList';
 
 const DESCRIPTION_LIMIT = 500;
@@ -135,15 +135,16 @@ function FellowshipGroupForm({ group, prefillName = '', groups, members, onClose
   );
 
   return (
-    <SlideOver label={editing ? 'Edit group' : 'New group'} titleId="group-form-title" onClose={requestClose} initialFocusRef={nameRef} footer={footer}>
+    <Modal
+      titleId="group-form-title"
+      title={editing ? `Edit ${group.group_name}` : 'Create a fellowship group'}
+      description="Choir, youth, women’s and men’s fellowships, Sunday school: any group members belong to."
+      icon="group"
+      onClose={requestClose}
+      initialFocusRef={nameRef}
+      footer={footer}
+    >
       <form id="group-form" onSubmit={handleSubmit} noValidate className="space-y-5 px-5 py-5">
-        <div>
-          <h2 id="group-form-title" className="text-lg font-semibold text-slate-900">
-            {editing ? `Edit ${group.group_name}` : 'Create a fellowship group'}
-          </h2>
-          <p className="mt-0.5 text-[13px] text-slate-500">Choir, youth, women’s and men’s fellowships, Sunday school: any group members belong to.</p>
-        </div>
-
         <Field id="group-group_name" label="Group name" error={errors.group_name}>
           <input
             ref={nameRef}
@@ -211,7 +212,7 @@ function FellowshipGroupForm({ group, prefillName = '', groups, members, onClose
           </select>
         </Field>
       </form>
-    </SlideOver>
+    </Modal>
   );
 }
 

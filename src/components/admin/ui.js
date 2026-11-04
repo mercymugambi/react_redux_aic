@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import Icon from './Icon';
 
@@ -118,13 +119,60 @@ export function StatCard({ label, icon, value, caption, to, tone, loading }) {
   );
 }
 
-// Right-hand panel for details and forms. Focus moves into it (to `initialFocusRef`,
-// or the close button), Tab stays inside, Escape closes, and focus returns to
-// whatever opened it.
-export function SlideOver({ label, titleId, onClose, initialFocusRef, footer, wide = false, children }) {
+/* Modals */
+const MODAL_SIZES = {
+  sm: 'sm:max-w-md',
+  md: 'sm:max-w-xl',
+  lg: 'sm:max-w-2xl',
+  xl: 'sm:max-w-5xl',
+};
+
+const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]';
+
+// The page behind stays put while any modal is open
+let scrollLocks = 0;
+let unlockedBodyStyle = null;
+
+export function lockPageScroll() {
+  if (scrollLocks === 0) {
+    const { body } = document;
+    const scrollbar = window.innerWidth - document.documentElement.clientWidth;
+    unlockedBodyStyle = { overflow: body.style.overflow, paddingRight: body.style.paddingRight };
+    body.style.overflow = 'hidden';
+    // Fill in for the hidden scrollbar so the page doesn't shift sideways
+    if (scrollbar > 0) body.style.paddingRight = `${scrollbar}px`;
+  }
+  scrollLocks += 1;
+  return () => {
+    scrollLocks -= 1;
+    if (scrollLocks === 0) Object.assign(document.body.style, unlockedBodyStyle);
+  };
+}
+
+// The brand-red icon tile at the start of a modal header
+function FeaturedIcon({ name }) {
+  return (
+    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-red-500 to-red-700 text-white shadow-sm shadow-red-900/20 ring-4 ring-red-50">
+      <Icon name={name} className="h-5 w-5" />
+    </span>
+  );
+}
+
+/**
+ * A dialog in the middle of the screen (a sheet from the bottom edge on phones)
+ * for details and forms. Focus moves into it (to `initialFocusRef`, or the close
+ * button), Tab stays inside, Escape or a click outside closes it, and focus
+ * returns to whatever opened it.
+ * - `title` gives it a header, with an optional `description` and `icon` (an
+ *   icon name, or an element such as an Avatar). Without a title, the content
+ *   supplies the heading (with id `titleId`) and the close button floats.
+ * - `size`: sm, md (the default), lg or xl
+ */
+export function Modal({ titleId, title, description, icon, onClose, initialFocusRef, footer, size = 'md', children }) {
   const panelRef = useRef(null);
   const closeRef = useRef(null);
   const onCloseRef = useRef(onClose);
+  const descriptionId = title && description ? `${titleId}-description` : undefined;
 
   useEffect(() => {
     onCloseRef.current = onClose;
@@ -133,15 +181,17 @@ export function SlideOver({ label, titleId, onClose, initialFocusRef, footer, wi
   useEffect(() => {
     const opener = document.activeElement;
     (initialFocusRef?.current || closeRef.current)?.focus();
+    const unlockScroll = lockPageScroll();
     const onKeyDown = (event) => {
       if (event.key === 'Escape') onCloseRef.current();
-      if (event.key !== 'Tab' || !panelRef.current) return;
-      const focusable = panelRef.current.querySelectorAll(
-        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled])'
-      );
+      const panel = panelRef.current;
+      if (event.key !== 'Tab' || !panel) return;
+      const focusable = [...panel.querySelectorAll(FOCUSABLE)].filter((element) => element.tabIndex >= 0);
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
+      if (!first) return;
+      // Clicking a plain part of the dialog focuses the dialog itself
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === panel)) {
         event.preventDefault();
         last.focus();
       } else if (!event.shiftKey && document.activeElement === last) {
@@ -152,36 +202,65 @@ export function SlideOver({ label, titleId, onClose, initialFocusRef, footer, wi
     document.addEventListener('keydown', onKeyDown);
     return () => {
       document.removeEventListener('keydown', onKeyDown);
+      unlockScroll();
       opener?.focus?.();
     };
   }, [initialFocusRef]);
 
-  return (
-    <div className="fixed inset-0 z-60 flex justify-end font-sans">
-      <div aria-hidden="true" onClick={() => onCloseRef.current()} className="admin-fade-in absolute inset-0 bg-slate-900/30 backdrop-blur-[1px]" />
-      <aside
+  const close = () => onCloseRef.current();
+
+  // In <body>, so no scrolling or clipping container on the page can trap it
+  return createPortal(
+    <div className="fixed inset-0 z-60 flex items-end justify-center font-sans text-slate-900 antialiased sm:items-center sm:p-6">
+      <div aria-hidden="true" onClick={close} className="admin-fade-in absolute inset-0 bg-slate-900/40 backdrop-blur-[2px]" />
+      <div
         ref={panelRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className={`admin-drawer-in relative flex h-full w-full ${wide ? 'max-w-3xl' : 'max-w-[440px]'} flex-col bg-white shadow-2xl shadow-slate-900/20`}
+        aria-describedby={descriptionId}
+        tabIndex={-1}
+        className={`admin-modal admin-modal-in relative flex w-full ${MODAL_SIZES[size]} flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl shadow-slate-900/25 ring-1 ring-slate-900/5 focus:outline-none sm:rounded-2xl`}
       >
-        <div className="flex h-14 shrink-0 items-center justify-between border-b border-slate-200 px-5">
-          <p className="text-[13px] font-medium text-slate-500">{label}</p>
+        {title ? (
+          <div className="flex shrink-0 items-start gap-3.5 border-b border-slate-100 px-5 py-4 sm:py-5">
+            {typeof icon === 'string' ? <FeaturedIcon name={icon} /> : icon}
+            <div className="min-w-0 flex-1 self-center">
+              <h2 id={titleId} className="text-base font-semibold leading-snug text-slate-900">
+                {title}
+              </h2>
+              {description && (
+                <p id={descriptionId} className="mt-0.5 text-[13px] leading-relaxed text-slate-500">
+                  {description}
+                </p>
+              )}
+            </div>
+            <button
+              ref={closeRef}
+              type="button"
+              onClick={close}
+              aria-label="Close"
+              className="-mr-1.5 -mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-200"
+            >
+              <Icon name="close" className="h-4 w-4" strokeWidth={2} />
+            </button>
+          </div>
+        ) : (
           <button
             ref={closeRef}
             type="button"
-            onClick={() => onCloseRef.current()}
-            aria-label="Close panel"
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-200"
+            onClick={close}
+            aria-label="Close"
+            className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/85 text-slate-500 shadow-sm ring-1 ring-slate-900/10 backdrop-blur transition hover:bg-white hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-200"
           >
             <Icon name="close" className="h-4 w-4" strokeWidth={2} />
           </button>
-        </div>
-        <div className="flex-1 overflow-y-auto">{children}</div>
-        {footer && <div className="shrink-0 border-t border-slate-200 bg-white px-5 py-3">{footer}</div>}
-      </aside>
-    </div>
+        )}
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">{children}</div>
+        {footer && <div className="admin-modal-footer shrink-0 border-t border-slate-100 bg-slate-50/80 px-5 pt-3.5">{footer}</div>}
+      </div>
+    </div>,
+    document.body
   );
 }
 
@@ -278,7 +357,7 @@ export function PreviewBanner({ children }) {
   );
 }
 
-// "Are you sure?" for deletes. Sits above slide-overs.
+// "Are you sure?" for deletes. Sits above modals.
 export function ConfirmDialog({ title, message, confirmLabel = 'Delete', busy = false, error, onConfirm, onCancel }) {
   const cancelRef = useRef(null);
   const onCancelRef = useRef(onCancel);
@@ -306,8 +385,8 @@ export function ConfirmDialog({ title, message, confirmLabel = 'Delete', busy = 
   }, []);
 
   return (
-    <div className="admin-fade-in fixed inset-0 z-70 flex items-center justify-center bg-slate-900/40 px-4 font-sans">
-      <div role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-message" className="w-full max-w-sm rounded-xl bg-white p-5 shadow-2xl shadow-slate-900/20">
+    <div className="admin-fade-in fixed inset-0 z-70 flex items-center justify-center bg-slate-900/40 px-4 font-sans backdrop-blur-[2px]">
+      <div role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-message" className="admin-pop-in w-full max-w-sm rounded-2xl bg-white p-5 shadow-2xl shadow-slate-900/25 ring-1 ring-slate-900/5">
         <div className="flex gap-3">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-50 text-red-600">
             <Icon name="trash" className="h-[18px] w-[18px]" />

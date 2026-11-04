@@ -1,8 +1,22 @@
 import React, { useLayoutEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
+import BookingModal from './BookingModal'
+
+// The link for the page you're on keeps the red hover colour, so visitors can always tell where they are.
+// `end` on Home stops "/" from matching every page; other links stay active on their sub-pages (e.g. /blog/:slug).
+const desktopLinkClass = ({ isActive }) =>
+  `relative py-1 font-sans text-sm font-semibold transition-colors hover:text-red-700 after:absolute after:inset-x-0 after:-bottom-0.5 after:h-0.5 after:rounded-full after:bg-red-700 after:transition-transform after:duration-200 ${
+    isActive ? 'text-red-700 after:scale-x-100' : 'text-slate-700 after:scale-x-0'
+  }`
+
+const mobileLinkClass = ({ isActive }) =>
+  `-mx-3 rounded-lg px-3 py-1.5 font-sans text-base font-semibold transition hover:text-red-700 ${
+    isActive ? 'bg-red-50 text-red-700' : 'text-slate-800'
+  }`
 
 function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [bookingOpen, setBookingOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const barRef = useRef(null)
 
@@ -29,10 +43,10 @@ function Navbar() {
     { label: 'Home', path: '/' },
     { label: 'About Us', path: '/aboutus' },
     { label: 'Events', path: '/events' },
-    { label: 'Sermons', href: '/#sermons' },
     { label: 'Gallery', path: '/gallery' },
     { label: 'Blog', path: '/blog' },
     { label: 'Contact Us', path: '/contact' },
+    { label: 'Giving', path: '/giving' },
   ]
 
   return (
@@ -67,13 +81,14 @@ function Navbar() {
         <div className="hidden shrink items-center gap-4 lg:flex xl:gap-7">
           {links.map((link) =>
             link.path ? (
-              <Link
+              <NavLink
                 key={link.label}
                 to={link.path}
-                className="font-sans text-sm font-semibold text-slate-700 transition-colors hover:text-red-700"
+                end={link.path === '/'}
+                className={desktopLinkClass}
               >
                 {link.label}
-              </Link>
+              </NavLink>
             ) : (
               <a
                 key={link.label}
@@ -88,17 +103,17 @@ function Navbar() {
 
         {/* ── Right Actions: Visit Button & Icons ── */}
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-          {/* Plan a Visit Pill Button */}
-          <Link
-            to="/contact"
+          {/* Book Appointment Pill Button */}
+          <button
+            type="button"
+            onClick={() => setBookingOpen(true)}
             className="hidden whitespace-nowrap rounded-full bg-red-700 px-5 py-2.5 font-sans text-xs font-bold uppercase tracking-wider text-white shadow-lg shadow-red-700/30 transition-all duration-200 hover:bg-red-800 hover:shadow-red-700/50 hover:scale-105 active:scale-95 md:inline-flex items-center gap-1.5"
           >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
-            Plan a Visit
-          </Link>
+            Book Appointment
+          </button>
 
           {/* Share Icon */}
           <button
@@ -188,7 +203,7 @@ function Navbar() {
             </svg>
             <input
               type="text"
-              placeholder="Search sermons, events, blog..."
+              placeholder="Search giving, events, blog..."
               className="w-full bg-transparent text-sm text-slate-800 placeholder-slate-400 focus:outline-none font-sans"
               autoFocus
             />
@@ -199,40 +214,42 @@ function Navbar() {
       {/* ── Mobile Navigation Menu Drawer ── */}
       {mobileMenuOpen && (
         <div className="border-t border-slate-200 bg-white px-6 py-4 lg:hidden">
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1">
             {links.map((link) =>
               link.path ? (
-                <Link
+                <NavLink
                   key={link.label}
                   to={link.path}
+                  end={link.path === '/'}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="font-sans text-base font-semibold text-slate-800 transition hover:text-red-700"
+                  className={mobileLinkClass}
                 >
                   {link.label}
-                </Link>
+                </NavLink>
               ) : (
                 <a
                   key={link.label}
                   href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="font-sans text-base font-semibold text-slate-800 transition hover:text-red-700"
+                  className="-mx-3 rounded-lg px-3 py-1.5 font-sans text-base font-semibold text-slate-800 transition hover:text-red-700"
                 >
                   {link.label}
                 </a>
               )
             )}
             <div className="mt-2 pt-3 border-t border-slate-100">
-              <Link
-                to="/contact"
-                onClick={() => setMobileMenuOpen(false)}
+              <button
+                type="button"
+                onClick={() => { setMobileMenuOpen(false); setBookingOpen(true) }}
                 className="inline-flex w-full justify-center rounded-full bg-red-700 py-2.5 font-sans text-sm font-bold uppercase tracking-wider text-white"
               >
-                Plan a Visit
-              </Link>
+                Book Appointment
+              </button>
             </div>
           </div>
         </div>
       )}
+      <BookingModal open={bookingOpen} onClose={() => setBookingOpen(false)} />
     </nav>
   )
 }

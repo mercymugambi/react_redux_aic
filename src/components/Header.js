@@ -27,7 +27,7 @@ function Header() {
         </p>
         <div data-reveal className="mt-10 flex flex-wrap justify-center gap-4">
           <Link to="/contact" className="btn-blue-primary shadow-lg transition duration-200 hover:-translate-y-0.5 hover:bg-blue-700">
-            Plan Your Visit
+            Book Appointment
           </Link>
           <Link to="/aboutus" className="btn-blue-secondary shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-slate-100">
             About us

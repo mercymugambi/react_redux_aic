@@ -24,12 +24,14 @@ export const PAGE_PERMISSIONS = {
   '/admin/leadership-positions': 'manage_leadership_positions',
   '/admin/events': 'manage_events',
   '/admin/devotions': 'manage_devotions',
-  // No blog permission exists on the backend yet, so only the super admin for now
-  '/admin/blog': SUPER_ADMIN,
+  '/admin/blog': 'manage_blog',
+  // The editor: /admin/blog/new, or /admin/blog/12 for an existing post
+  '/admin/blog/:postId': 'manage_blog',
   '/admin/gallery': 'manage_gallery',
   '/admin/users': 'manage_users',
   '/admin/users/new': SUPER_ADMIN,
   '/admin/roles': 'manage_roles',
+  '/admin/settings': 'manage_settings',
 };
 
 export const NOT_AUTHORIZED_PATH = '/admin/not-authorized';

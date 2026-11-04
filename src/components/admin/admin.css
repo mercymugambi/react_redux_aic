@@ -81,10 +81,51 @@
   border: 1px solid #fecaca;
 }
 
-/* Slide-over panels and toasts (Members page) */
-@keyframes admin-drawer-in {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
+/* Blog editor: text fields that grow with what's typed. A hidden copy of the text
+   in ::after sizes the grid cell and the textarea fills it, so nothing is measured. */
+.admin-grow {
+  display: grid;
+}
+
+.admin-grow::after {
+  content: attr(data-value) ' ';
+  visibility: hidden;
+  white-space: pre-wrap;
+}
+
+.admin-grow > textarea {
+  resize: none;
+  overflow: hidden;
+  background: transparent;
+  color: inherit;
+  text-align: inherit;
+  text-transform: inherit;
+}
+
+.admin-grow > textarea,
+.admin-grow::after {
+  grid-area: 1 / 1 / 2 / 2;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  overflow-wrap: anywhere;
+}
+
+.admin-grow > textarea:focus {
+  outline: none;
+}
+
+/* Modals, confirmations and toasts */
+@keyframes admin-pop-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes admin-sheet-in {
+  from { transform: translateY(100%); }
+  to { transform: none; }
 }
 
 @keyframes admin-fade-in {
@@ -97,8 +138,39 @@
   to { opacity: 1; transform: translate(-50%, 0); }
 }
 
-.admin-drawer-in {
-  animation: admin-drawer-in 260ms cubic-bezier(0.22, 1, 0.36, 1);
+/* Phones: a modal is a sheet that rises from the bottom edge, with its
+   buttons clear of the home indicator */
+.admin-modal {
+  max-height: calc(100vh - 2.5rem);
+  max-height: calc(100dvh - 2.5rem);
+}
+
+.admin-modal-in {
+  animation: admin-sheet-in 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.admin-modal-footer {
+  padding-bottom: calc(0.875rem + env(safe-area-inset-bottom));
+}
+
+/* From Tailwind's sm breakpoint up: a card in the middle of the screen */
+@media (min-width: 480px) {
+  .admin-modal {
+    max-height: calc(100vh - 3rem);
+    max-height: calc(100dvh - 3rem);
+  }
+
+  .admin-modal-in {
+    animation: admin-pop-in 240ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .admin-modal-footer {
+    padding-bottom: 0.875rem;
+  }
+}
+
+.admin-pop-in {
+  animation: admin-pop-in 200ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .admin-fade-in {
@@ -110,7 +182,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .admin-drawer-in,
+  .admin-modal-in,
+  .admin-pop-in,
   .admin-fade-in,
   .admin-toast-in {
     animation: none;

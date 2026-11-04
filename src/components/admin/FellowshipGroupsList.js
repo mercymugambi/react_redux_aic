@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import api from '../../redux/api';
 import FellowshipGroupForm, { memberFullName } from './FellowshipGroupForm';
 import Icon from './Icon';
-import { Avatar, BUTTON, Checkbox, ConfirmDialog, PRIMARY_BUTTON, Skeleton, SlideOver, Toast, TONES, useToast } from './ui';
+import { Avatar, BUTTON, Checkbox, ConfirmDialog, Modal, PRIMARY_BUTTON, Skeleton, Toast, TONES, useToast } from './ui';
 import useAdminList, { saveErrorMessages } from './useAdminList';
 
 // One-click starting points when a church has no groups yet
@@ -187,7 +187,7 @@ function GroupPanel({ group, groupMembers, allMembers, membersAvailable, onClose
   );
 
   return (
-    <SlideOver label="Fellowship group" titleId="group-panel-title" onClose={adding ? stopAdding : onClose} footer={footer}>
+    <Modal titleId="group-panel-title" onClose={adding ? stopAdding : onClose} footer={footer} size="sm">
       {/* Identity */}
       <div className="relative overflow-clip border-b border-slate-100 px-5 pb-5 pt-6">
         <div
@@ -323,7 +323,7 @@ function GroupPanel({ group, groupMembers, allMembers, membersAvailable, onClose
           </div>
         )}
       </section>
-    </SlideOver>
+    </Modal>
   );
 }
 
