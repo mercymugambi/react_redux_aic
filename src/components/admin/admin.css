@@ -1,0 +1,191 @@
+/* ══════════════════════════════════════════════════
+   Admin list pages (Members, Users, Roles, …)
+   The shell (Dashboard.js) and the overview use Tailwind; these
+   classes style the plain markup the list pages render.
+   ══════════════════════════════════════════════════ */
+
+/* Page heading + count line. :where() keeps specificity low so Tailwind
+   utilities on other pages always win. */
+:where(.admin-main) > div > h2 {
+  margin: 0 0 4px;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #0f172a;
+}
+
+:where(.admin-main) > div > p {
+  margin: 0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+/* Tables */
+.admin-table {
+  width: 100%;
+  margin-top: 20px;
+  border: 1px solid #e2e8f0;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  font-size: 13px;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 10px 16px;
+  text-align: left;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.admin-table th {
+  background: #f8fafc;
+  border-bottom-color: #e2e8f0;
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.admin-table td {
+  color: #475569;
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.admin-table tbody tr:hover td {
+  background: #f8fafc;
+}
+
+/* Status messages */
+.loading-message,
+.error-message {
+  margin: 0;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+}
+
+.loading-message {
+  color: #64748b;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.error-message {
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+/* Blog editor: text fields that grow with what's typed. A hidden copy of the text
+   in ::after sizes the grid cell and the textarea fills it, so nothing is measured. */
+.admin-grow {
+  display: grid;
+}
+
+.admin-grow::after {
+  content: attr(data-value) ' ';
+  visibility: hidden;
+  white-space: pre-wrap;
+}
+
+.admin-grow > textarea {
+  resize: none;
+  overflow: hidden;
+  background: transparent;
+  color: inherit;
+  text-align: inherit;
+  text-transform: inherit;
+}
+
+.admin-grow > textarea,
+.admin-grow::after {
+  grid-area: 1 / 1 / 2 / 2;
+  margin: 0;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  overflow-wrap: anywhere;
+}
+
+.admin-grow > textarea:focus {
+  outline: none;
+}
+
+/* Modals, confirmations and toasts */
+@keyframes admin-pop-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes admin-sheet-in {
+  from { transform: translateY(100%); }
+  to { transform: none; }
+}
+
+@keyframes admin-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes admin-toast-in {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* Phones: a modal is a sheet that rises from the bottom edge, with its
+   buttons clear of the home indicator */
+.admin-modal {
+  max-height: calc(100vh - 2.5rem);
+  max-height: calc(100dvh - 2.5rem);
+}
+
+.admin-modal-in {
+  animation: admin-sheet-in 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.admin-modal-footer {
+  padding-bottom: calc(0.875rem + env(safe-area-inset-bottom));
+}
+
+/* From Tailwind's sm breakpoint up: a card in the middle of the screen */
+@media (min-width: 480px) {
+  .admin-modal {
+    max-height: calc(100vh - 3rem);
+    max-height: calc(100dvh - 3rem);
+  }
+
+  .admin-modal-in {
+    animation: admin-pop-in 240ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .admin-modal-footer {
+    padding-bottom: 0.875rem;
+  }
+}
+
+.admin-pop-in {
+  animation: admin-pop-in 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.admin-fade-in {
+  animation: admin-fade-in 200ms ease-out;
+}
+
+.admin-toast-in {
+  animation: admin-toast-in 200ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-modal-in,
+  .admin-pop-in,
+  .admin-fade-in,
+  .admin-toast-in {
+    animation: none;
+  }
+}
